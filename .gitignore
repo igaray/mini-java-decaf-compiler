@@ -25,3 +25,7 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+
+#SublimeText
+compiler.sublime-project
+compiler.sublime-workspace
