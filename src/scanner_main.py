@@ -20,7 +20,7 @@ def pretty_print_error_message(input_filepath, exc):
         print line_str,
     else:
         print line_str
-    i = 0
+    i = 1
     while (i < col):
         sys.stdout.write("-")
         i += 1
@@ -29,43 +29,46 @@ def pretty_print_error_message(input_filepath, exc):
 
 def usage():
     usage_str = """
-    Error: two arguments required.
     Usage:
-        scanner INPUTFILE OUTPUTFILE
+        scanner INPUTFILE [OUTPUTFILE]
 
     """
     print usage_str
 
-if __name__ == "__main__":
-    argv_len = len(sys.argv)
-    if ((argv_len == 3) or (argv_len == 2)):
-        input_filepath = sys.argv[1]
-        try:
-            lex = Scanner(input_filepath)
-        except IOError as ioe:
-            print "Error: no such file."
-            sys.exit()
 
-        if (argv_len == 3):
-            output_filepath = sys.argv[2]
+def run_scanner(input_filepath, output_filepath = None):
+    try:
+        lex = Scanner(input_filepath)
+        if (output_filepath != None):
             output_file = open(output_filepath, 'w')
-            sys.stdout = output_file
+            sys.stdout  = output_file
 
-        #import pdb; pdb.set_trace()
         while True:
             try:
                 token = lex.get_token()
-                if token.type() == TK_EOF:
+                if token.type == TK_EOF:
                     break
             except LexicalError as le:
-                #print "\n", e
                 pretty_print_error_message(input_filepath, le)
                 sys.exit()
-            print token
+            print token    
 
-        if (argv_len == 3):
+        if (output_filepath != None):
             output_file.close()
-    else:
+    except IOError as ioe:
+        print "Error: no such file."
+        sys.exit()
+
+if __name__ == "__main__":
+    argv_len = len(sys.argv)
+    if not ((argv_len == 3) or (argv_len == 2)):
         usage()
+        sys.exit()
 
+    input_filepath = sys.argv[1]
 
+    if (argv_len == 3):
+        output_filepath = sys.argv[2]
+        run_scanner(input_filepath, output_filepath)
+    else:
+        run_scanner(input_filepath)

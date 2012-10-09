@@ -1,10 +1,5 @@
 class LexicalError(Exception):
-    def __init__(self, scanner, msg = "Token no reconocido."):
-        self.line    = scanner.current_token().line()
-        self.col     = scanner.current_token().col()
-        self.message = "LEXICAL ERROR: Line: %d, Col: %d :: %s" % (self.line, self.col, msg)
-
-    def __init__(self, line, col, msg = "Token no reconocido."):
+    def __init__(self, line, col, msg):
         self.line    = line
         self.col     = col
         self.message = "LEXICAL ERROR: Line: %d, Col: %d :: %s" % (line, col, msg)

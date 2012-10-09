@@ -3,42 +3,31 @@ def isToken(obj):
 
 class Token(object):
     def __init__(self):
-        self._lexeme = ""
-        self._line   = 1
-        self._col    = 0
-        self._type   = 0
+        self.lexeme = ""
+        self.line   = 1
+        self.col    = 0
+        self.type   = 0
+        self.value  = None
 
     def append(self, ch):
-        self._lexeme += ch
-
-    def line(self):
-        return self._line
-
-    def col(self):
-        return self._col
-
-    def lexeme(self):
-        return self._lexeme
-
-    def type(self):
-        return self._type
+        self.lexeme += ch
 
     def __str__(self):
-        return "%d:%d\t-\t%s\t:: %s" % (self._line, self._col, self._type, self._lexeme)
+        return "%d:%d\t- %s :: %s" % (self.line, self.col, self.type, self.lexeme)
 
 class TokenType(object):
     def __init__(self, id, name):
-        self._id = id
-        self._name = name
+        self.id   = id
+        self.name = name
 
     def __eq__(self, other):
-        return self._id == other._id
+        return self.id == other.id
 
     def __str__(self):
-        return self._name
+        return self.name
 
     def __repr__(self):
-        return "TokenType(%d,%s)" % (self._id, self._name)
+        return "TokenType(%d,%s)" % (self.id, self.name)
 
 TK_IDENTIFIER      = TokenType( 0, "<TK_IDENTIFIER>     ")
 TK_INT_LITERAL     = TokenType( 1, "<TK_INT_LITERAL>    ")
