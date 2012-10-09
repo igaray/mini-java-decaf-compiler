@@ -1,0 +1,82 @@
+\section{Análisis Sintáctico}
+
+\hypertarget{_proceso}{}
+\subsection{Proceso}
+\label{_proceso}
+La gramática fue procesada de manera tal que fuera LL(1). Para lograr
+esto primero se eliminó la recursividad a izquierda y luego se
+factorizó.
+El proceso completo consistió en:
+\begin{itemize}
+ \item Eliminacion de extensiones de la EBNF suministrada por la catedra.
+  La gramática resultante puede verse en los apendices.
+ \item Eliminacion de los aspectos regulares de la gramática original, los cuales
+  eran resueltos por el analizador léxico.
+  Entre estos estan las reglas para la generacion de identificadores válidos,
+  digitos válidos, operadores, y demas tokens predefinidos y reconocidos.
+ \item Eliminacion de reglas recursivas a izquierda, para lograr que la gramática
+  fuese parseable por un parser descendiente recursivo.
+ \item Factorizacion a izquierda para minimizar la cantidad de producciones
+  y simplificar la implementación del parser.
+ \item Impementación del parser, implementando una funcion por cada regla de la
+  gramática.
+  En cada función donde se detectaba una situación anómala, se levanta una
+  excepción con el mensaje correspondiente.
+ \item Impementación del parser, implementando una funcion por cada regla de la
+  gramática.
+  En cada función donde se detectaba una situación anómala, se levanta una
+  excepción con el mensaje correspondiente.
+ \item A partir de cada punto de fallo posible, se generó un test diseñado para
+  levantar esa excepción particlar.
+\end{itemize}
+
+Dado que la gramática original no está diseñada para que sea procesada
+como una LL(1), hubo que realizar algunas excepciones que se trataran
+en las etapas siguientes:
+  \begin{enumerate}
+\item%
+En la gramática original se diferencia entre declaración de
+constructor y declaración de métodos. Esto sucede porque los
+constructores no deben llevar un tipo de retorno. Pero dado que el
+tipo de retorno puede ser un token reconocido como IDENTIFIER, el cual
+coincide con el tipo de token de nombre del constructor, se resolvió
+tratar a todos los métodos por igual, y dejar el checkeo de tipo de
+retorno según el tipo de método para la etapa del análisis
+semántico.
+
+\item%
+De forma similar al primer punto, los tipos de los atributos de clase tienen
+un caso especial: no pueden ser de tipo VOID\_{}TYPE. Esto dificulta la
+gramática resultante, por lo que se resolvió realizar el checkeo de
+que los atributos de clase no pueden ser de tipo VOID\_{}TYPE en la etapa
+de análisis semántico.
+
+\item%
+Otro caso especial ocurre con los constructores, que no pueden
+poseer el token STATIC en sus modificadores. Como se dijo en 1., se
+tratarán a los constructores como métodos regulares y el checkeo de
+que no estén declarados como static se hará en la etapa de análisis
+semántico.
+
+\item%
+La regla de la gramática original que cuyo lado izquierdo era
+\textless{}expression\textgreater{} contenia una ambiguedad que no es posible resolver desde
+el punto de vista sintáctico. Esta ambiguedad se debe a la similitud
+posible entre una sentencia de asignación y una expresión condicional,
+por lo que se resolvió mover la detección de la asignación más
+adelante en el arbol sintáctico. Esto da lugar a que sea posible
+escribir sentencias del estilo: (a + 4) = 2;
+   Este control se realizará en la etapa de análisis semántico.
+
+\item%
+El último cambio significativo a la gramática corresponde a las
+sentecias de control, específicamente al if. Para resolver
+ambiguedades en una cadena de ifs anidados con sus respectivos else,
+la gramática utiliza una serie de reglas que a la hora de convertir a
+LL(1) resulta imposible. Para saltear esta barrera, se simplificaron
+las reglas en cuestión, y se asume que cada else está ligado al if más
+cercano.
+Esta consideración recién se verá en la etapa de generación de
+código.
+
+\end{enumerate}

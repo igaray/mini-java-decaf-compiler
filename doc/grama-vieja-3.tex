@@ -1,0 +1,243 @@
+\subsection{Gramática LL(1) resultante}
+<compilation unit>             ::= <type declarations>
+
+<type declarations>            ::= <class declaration> <type declarations>
+<type declarations>            ::= LAMBDA
+
+<class declaration>            ::= PUBLIC CLASS IDENTIFIER <rest class declaration>
+
+<rest class declaration>       ::= <class body>
+<rest class declaration>       ::= ENTENDS IDENTIFIER <class body>
+
+<class body>                   ::= BRACE_OPEN <rest class body>
+<rest class body>              ::= BRACE_CLOSE
+<rest class body>              ::= <class body declarations> BRACE_CLOSE
+
+<class body declarations>      ::= <class body declaration> <rest class body declarations>
+<rest class body declarations> ::= LAMBDA
+<rest class body declarations> ::= <class body declarations>
+
+<class body declaration>       ::= <field modifiers> <rest class body declaration>
+
+<rest class body declaration>  ::= <type noident void> <declarators>
+<rest class body declaration>  ::= IDENTIFIER <rest2 class body declaration>
+
+<rest2 class body declaration> ::= <constructor declarator> <constructor body>
+<rest2 class body declaration> ::= <declarators>
+
+<constructor declarator>       ::= PAREN_OPEN <rest constructor declarator>
+
+<rest constructor declarator>  ::= PAREN_CLOSE
+<rest constructor declarator>  ::= <formal parameter list> PAREN_CLOSE
+
+<formal parameter list>        ::= <formal parameter> <rest formal parameter list>
+
+<rest formal parameter list>   ::= COMMA <formal parameter list>
+<rest formal parameter list>   ::= LAMBDA
+
+<formal parameter>             ::= <type> IDENTIFIER
+
+<constructor body>             ::= BRACE_OPEN <rest constructor body>
+
+<rest constructor body>        ::= BRACE_CLOSE
+<rest constructor body>        ::= <block statements> BRACE_CLOSE
+
+<rest2 constructor body>       ::= BRACE_CLOSE
+<rest2 constructor body>       ::= <block statements> BRACE_CLOSE
+
+<field modifiers>              ::= <field modifier> <rest field modifiers>
+
+<rest field modifiers>         ::= LAMBDA
+<rest field modifiers>         ::= <field modifiers>
+
+<field modifier>               ::= PUBLIC
+<field modifier>               ::= PROTECTED
+<field modifier>               ::= STATIC
+
+<declarators>                  ::= IDENTIFIER <rest declarators>
+
+<rest declarators>             ::= COMMA <rest declarators>
+<rest declarators>             ::= ASSIGNMENT <expression> SCOLON
+<rest declarators>             ::= PAREN_OPEN <rest method declarator> <method body>
+<rest declarators>             ::= SCOLON
+
+<rest method declarator>       ::= PAREN_CLOSE
+<rest method declarator>       ::= <formal parameter list> PAREN_CLOSE
+
+<method body>                  ::= <block>
+
+<type>              ::= <primitive type>
+<type>              ::= IDENTIFIER
+<type>              ::= VOID_TYPE
+
+<type noident void> ::= <primitive type>
+<type noident void> ::= VOID_TYPE
+
+<primitive type>    ::= <numeric type>
+<primitive type>    ::= <boolean type>
+
+<numeric type>      ::= <integral type>
+
+<integral type>     ::= INT_TYPE
+<integral type>     ::= CHAR_TYPE
+
+<boolean type>      ::= BOOLEAN_TYPE
+
+<block>                                   ::= BRACE_OPEN <rest block>
+
+<rest block>                              ::= BRACE_CLOSE
+<rest block>                              ::= <block statements> BRACE_CLOSE
+
+<block statements>                        ::= <block statement> <rest block statements>
+
+<rest block statements>                   ::= LAMBDA
+<rest block statements>                   ::= <block statements>
+
+<block statement>                         ::= <primitive type> <local variable declaration statement>
+<block statement>                         ::= <if start statement>
+<block statement>                         ::= <while statement>
+<block statement>                         ::= <block>
+<block statement>                         ::= <empty statement>
+<block statement>                         ::= <return statement>
+<block statement>                         ::= <primary> <method invocation rest>
+
+<local variable declaration statement>    ::= <local variable declaration> SCOLON
+
+<local variable declaration>              ::= IDENTIFIER <variable declarators>
+
+<variable declarators>                    ::= <variable declarator> <rest variable declarators>
+
+<rest variable declarators>               ::= LAMBDA
+<rest variable declarators>               ::= COMMA IDENTIFIER <variable declarators>
+<rest variable declarators>               ::= COMMA THIS <variable declarators>
+<rest variable declarators>               ::= COMMA SUPER <variable declarators>
+
+<variable declarator>                     ::= <rest variable declarator>
+<rest variable declarator>                ::= LAMBDA
+<rest variable declarator>                ::= ASSIGNMENT <expression>
+
+<statement>                               ::= <statement without trailing substatement>
+<statement>                               ::= <if start statement>
+<statement>                               ::= <while statement>
+
+<statement without trailing substatement> ::= <block>
+<statement without trailing substatement> ::= <empty statement>
+<statement without trailing substatement> ::= <expression statement>
+<statement without trailing substatement> ::= <return statement>
+
+<empty statement>                         ::= SCOLON
+
+<expression statement>                    ::= <statement expression> SCOLON
+<statement expression>                    ::= <method invocation>
+
+<if start statement>                      ::= IF PAREN_OPEN <expression> PAREN_CLOSE <statement> <rest if start statement>
+
+<rest if start statement>                 ::= LAMBDA
+<rest if start statement>                 ::= ELSE <statement>
+
+<while statement>                         ::= WHILE PAREN_OPEN <expression> PAREN_CLOSE <statement>
+
+<return statement>                        ::= RETURN <rest return statement>
+
+<rest return statement>                   ::= SCOLON
+<rest return statement>                   ::= <expression> SCOLON
+
+<expression>                              ::= <assignment expression>
+
+<assignment expression>                   ::= <conditional expression>
+
+<conditional expression>                  ::= <conditional or expression> <conditional expression rest>
+
+<conditional expression rest>             ::= LAMBDA
+<conditional expression rest>             ::= ASSIGNMENT <conditional expression>
+
+<conditional or expression>               ::= <conditional and expression> <conditional or expression rest>
+
+<conditional or expression rest>          ::= CONDITIONAL_OR <conditional or expression>
+<conditional or expression rest>          ::= LAMBDA
+
+<conditional and expression>              ::= <equality expression> <conditional and expression rest>
+
+<conditional and expression rest>         ::= LAMBDA
+<conditional and expression rest>         ::= CONDITIONAL_AND <conditional and expression>
+
+<equality expression>                     ::= <relational expression> <equality expression rest>
+
+<equality expression rest>                ::= EQUALS <equality expression>
+<equality expression rest>                ::= NOT_EQUALS <equality expression>
+<equality expression rest>                ::= LAMBDA
+
+<relational expression>                   ::= <additive expression> <relational expression rest>
+
+<relational expression rest>              ::= LT <relational expression>
+<relational expression rest>              ::= GT <relational expression>
+<relational expression rest>              ::= LT_EQ <relational expression>
+<relational expression rest>              ::= GT_EQ <relational expression>
+<relational expression rest>              ::= LAMBDA
+
+<additive expression>                     ::= <multiplicative expression> <additive expression rest>
+
+<additive expression rest>                ::= ADD <additive expression>
+<additive expression rest>                ::= SUB <additive expression>
+<additive expression rest>                ::= LAMBDA
+
+<multiplicative expression>               ::= <unary expression> <multiplicative expression rest>
+
+<multiplicative expression rest>          ::= MUL <multiplicative expression>
+<multiplicative expression rest>          ::= DIV <multiplicative expression>
+<multiplicative expression rest>          ::= MOD <multiplicative expression>
+<multiplicative expression rest>          ::= LAMBDA
+
+<unary expression>                        ::= ADD <unary expression>
+<unary expression>                        ::= SUB <unary expression>
+<unary expression>                        ::= <unary expression not plus minus>
+
+<unary expression not plus minus>         ::= <postfix expression>
+<unary expression not plus minus>         ::= NOT <unary expression>
+
+<postfix expression>                      ::= <primary>
+
+<primary>                                 ::= <literal> <primary rest>
+<primary>                                 ::= THIS <primary rest>
+<primary>                                 ::= PAREN_OPEN <expression> PAREN_CLOSE <primary rest>
+<primary>                                 ::= <class instance creation expression> <primary rest>
+<primary>                                 ::= SUPER ACCESSOR IDENTIFIER <primary rest>
+<primary>                                 ::= <method invocation> <primary rest>
+
+<primary rest>                            ::= ACCESSOR IDENTIFIER <primary rest2>
+<primary rest>                            ::= LAMBDA
+
+<primary rest2>                           ::= PAREN_OPEN <method invocation rest2> <primary rest>
+<primary rest2>                           ::= LAMBDA
+
+<class instance creation expression>      ::= NEW IDENTIFIER PAREN_OPEN <class instance creation expression rest>
+
+<class instance creation expression rest> ::= PAREN_CLOSE
+<class instance creation expression rest> ::= <argument list> PAREN_CLOSE
+
+<argument list>                           ::= <expression> <rest argument list>
+
+<rest argument list>                      ::= LAMBDA
+<rest argument list>                      ::= COMMA <argument list>
+
+<method invocation>                       ::= IDENTIFIER <primary rest> <method invocation rest>
+<method invocation>                       ::= <literal> <primary rest> ACCESSOR IDENTIFIER PAREN_OPEN <method invocation rest2> <method invocation rest>
+<method invocation>                       ::= THIS <primary rest> ACCESSOR IDENTIFIER PAREN_OPEN <method invocation rest2> <method invocation rest>
+<method invocation>                       ::= PAREN_OPEN <expression> PAREN_CLOSE <primary rest> ACCESSOR IDENTIFIER PAREN_OPEN <method invocation rest2> <method invocation rest>
+<method invocation>                       ::= <class instance creation expression> <primary rest> ACCESSOR IDENTIFIER PAREN_OPEN <method invocation rest2> <method invocation rest>
+<method invocation>                       ::= SUPER <primary rest> <super rest>
+
+<super rest>                              ::= IDENTIFIER PAREN_OPEN <method invocation rest2> <method invocation rest>
+<super rest>                              ::= PAREN_OPEN <method invocation rest2> <method invocation rest>
+
+<method invocation rest>                  ::= ACCESSOR IDENTIFIER PAREN_OPEN <method invocation rest2> <method invocation rest>
+<method invocation rest>                  ::= <variable declarators>
+<method invocation rest>                  ::= <rest variable declarators>
+<method invocation rest>                  ::= PAREN_OPEN <method invocation rest2> <method invocation rest>
+<method invocation rest>                  ::= LAMBDA
+
+<method invocation rest2>                 ::= PAREN_CLOSE
+<method invocation rest2>                 ::= <argument list> PAREN_CLOSE
+
+<boolean literal>                         ::= TRUE
+<boolean literal>                         ::= FALSE

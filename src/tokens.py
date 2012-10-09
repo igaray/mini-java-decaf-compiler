@@ -75,6 +75,7 @@ TK_NOT             = TokenType(42, "<TK_NOT>            ")
 TK_AND             = TokenType(43, "<TK_AND>            ")
 TK_OR              = TokenType(44, "<TK_OR>             ")
 TK_EOF             = TokenType(45, "<TK_EOF>            ")
+TK_FOP             = TokenType(46, "<TK_FOP>            ")
 LAMBDA             = TokenType(-1, "LAMBDA              ")
 
 RESERVED_WORDS = {

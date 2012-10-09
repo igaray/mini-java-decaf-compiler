@@ -1,0 +1,141 @@
+DECAF GRAMMAR
+
+<start>                 ::= <class>
+<start>                 ::= <class> <start>
+
+<class>                 ::= CLASS IDENTIFIER <class_body>
+<class>                 ::= CLASS IDENTIFIER <super> <class_body>
+
+<class_body>            ::= BRACE_OPEN <fields> <ctors> <methods> BRACE_CLOSE
+
+<fields>                ::= LAMBDA
+<fields>                ::= <field>
+<fields>                ::= <field> <fields>
+
+<ctors>                 ::= LAMBDA
+<ctors>                 ::= <ctor>
+<ctors>                 ::= <ctor> <ctors>
+
+<methods>               ::= LAMBDA
+<methods>               ::= <method>
+<methods>               ::= <method> <methods>
+
+<super>                 ::= EXTENDS IDENTIFIER
+
+<field>                 ::= <type> <var_declarator_list> SEMICOLON
+
+<method>                ::= <method_type> IDENTIFIER <formal_args> <block>
+
+<ctor>                  ::= IDENTIFIER <formal_args> <block>
+
+<formal_args>           ::= PAREN_OPEN PAREN_CLOSE
+<formal_args>           ::= PAREN_OPEN <formal_arg_list> PAREN_CLOSE
+
+<formal_arg_list>       ::= <formal_arg>
+<formal_arg_list>       ::= <formal_arg> COMMA <formal_arg_list>
+
+<formal_arg>            ::= <type> IDENTIFIER
+
+<method_type>           ::= VOID
+<method_type>           ::= <type>
+
+<type>                  ::= <primitive_type>
+<type>                  ::= IDENTIFIER
+
+<primitive_type>        ::= BOOLEAN
+<primitive_type>        ::= CHAR
+<primitive_type>        ::= INT
+<primitive_type>        ::= STRING
+
+<var_declarator_list>   ::= IDENTIFIER
+<var_declarator_list>   ::= IDENTIFIER COMMA <var_declarator_list>
+
+<block>                 ::= BRACE_OPEN <statements> BRACE_CLOSE
+
+<statements>            ::= <statement>
+<statements>            ::= <statement> <statements>
+
+<statement>             ::= SEMICOLON
+<statement>             ::= IF PAREN_OPEN <expression> 
+                            PAREN_CLOSE <statement>
+<statement>             ::= IF PAREN_OPEN <expression> 
+                            PAREN_CLOSE <statement> ELSE <statement>
+<statement>             ::= RETURN SEMICOLON
+<statement>             ::= RETURN <expression> SEMICOLON
+<statement>             ::= <block>
+
+<expression>            ::= <assignment_expr>
+
+<assignment_expr>       ::= <logical_expr>
+
+<logical_expr>          ::= <logical_or_expr> <logical_expr_rest>
+
+<logical_expr_rest>     ::= LAMBDA
+<logical_expr_rest>     ::= ASSIGNMENT <logical_expr>
+
+<logical_or_expr>       ::= <logical_and_expr> <logical_or_expr_rest>
+
+<logical_or_expr_rest>  ::= LAMBDA
+<logical_or_expr_rest>  ::= OR <logical_or_expr>
+
+<logical_and_expr>      ::= <equality_expr> <logical_and_expr_rest>
+
+<logical_and_expr_rest> ::= LAMBDA
+<logical_and_expr_rest> ::= AND <logical_and_expr>
+
+<equality_expr>         ::= <relational_expr> <equality_expr_rest>
+
+<equality_expr_rest>    ::= LAMBDA
+<equality_expr_rest>    ::= EQUALS <equality_expr>
+<equality_expr_rest>    ::= NOTEQUALS <equality_expr>
+
+<relational_expr>       ::= <term_expr> <relational_expr_rest>
+
+<relational_expr_rest>  ::= LAMBDA
+<relational_expr_rest>  ::= LT <relational_expr>
+<relational_expr_rest>  ::= GT <relational_expr>
+<relational_expr_rest>  ::= LTEQ <relational_expr>
+<relational_expr_rest>  ::= GTEQ <relational_expr>
+
+<term_expr>             ::= <factor_expr> <additive_expr_rest>
+
+<additive_expr_rest>    ::= LAMBDA
+<additive_expr_rest>    ::= ADD <term_expr>
+<additive_expr_rest>    ::= SUB <term_expr>
+
+<factor_expr>           ::= <unary_expr> <multiplicative_expr_rest>
+
+<factor_expr_rest>      ::= LAMBDA
+<factor_expr_rest>      ::= MUL <factor_expr>
+<factor_expr_rest>      ::= DIV <factor_expr>
+<factor_expr_rest>      ::= MOD <factor_expr>
+
+<unary_expr>            ::= ADD <unary_expr>
+<unary_expr>            ::= SUB <unary_expr>
+<unary_expr>            ::= NOT <unary_expr>
+<unary_expr>            ::= <primary>
+
+<primary>               ::= <new_expr>
+<primary>               ::= IDENTIFIER
+
+<new_expr>              ::= <literal>
+<new_expr>              ::= THIS
+<new_expr>              ::= THIS PERIOD IDENTIFIER
+<new_expr>              ::= PAREN_OPEN <expression> PAREN_CLOSE
+<new_expr>              ::= NEW IDENTIFIER <actual_args>
+<new_expr>              ::= IDENTIFIER <actual_args>
+<new_expr>              ::= <primary> PERIOD IDENTIFIER <actual_args>
+<new_expr>              ::= SUPER PERIOD IDENTIFIER <actual_args>
+
+<literal>               ::= NULL
+<literal>               ::= TRUE
+<literal>               ::= FALSE
+<literal>               ::= INT_LITERAL
+<literal>               ::= CHAR_LITERAL
+<literal>               ::= STRING_LITERAL
+
+<actual_args>           ::= PAREN_OPEN PAREN_CLOSE
+<actual_args>           ::= PAREN_OPEN <expr_list> PAREN_CLOSE
+
+<expr_list>             ::= <expression>
+<expr_list>             ::= <expression> COMMA <expr_list>

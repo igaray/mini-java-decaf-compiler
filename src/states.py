@@ -7,16 +7,25 @@ class State(object):
 
     def __init__(self, desc, next_chk_list, acc, tok_type):
         self.description = desc
-        self.next_state  = next_chk_list # [ ( sig_estado, loop, lambda_checkeo ) , ... ]
-        self.accepts     = acc
-        self.token_type  = tok_type
-
+        # [ (next_state, loop, lambda_check), ... ]
+        # Each element of the next_chk_list is a 3-tuple representing
+        # a transition.
+        # The first element is the next state of the FMS if the 
+        # transition is fired. 
+        # The second element is a boolean value 'loop', which is true
+        # if the transition loops into the same state.
+        # The third element is a lambda function, which is called to 
+        # ascertain whether the transtion should fire.
+        self.next_state = next_chk_list
+        self.accepts    = acc
+        self.token_type = tok_type
+    
     def check(self, ch):
         for (next, loop, chk) in self.next_state:
-            if chk != None:
-                if chk(ch) and next != None:
+            if (chk != None):
+                if (chk(ch) and next != None):
                     return next
-                elif chk(ch) and loop:
+                elif (chk(ch) and loop):
                     return self
                 elif chk(ch):
                     raise Exception("Bad state.")
@@ -37,15 +46,22 @@ class State(object):
         # then the next state is the next state
         # in any other case, something bad happened
         if not ((self.accepts and next_state == None) or (next_state != None)):
-            raise LexicalError(line, col + 1, "Token no reconocido.")
+            raise LexicalError(line, col, "Unrecognized token.")
         return next_state
+
+        #if self.accepts and next_state == None:
+        #    return None
+        #elif next_state != None:
+        #    return next_state
+        #else:
+        #    raise LexicalError(line, col, "Unknown token.")
 
     def get_token_type(self):
         return self.token_type
 
 # Transition checks
-_check_identifier           = lambda c: c in string.ascii_letters+"_"
-_check_identifier_rest      = lambda c: c in string.ascii_letters+string.digits+"_"
+_check_identifier           = lambda c: c in string.ascii_letters + "_"
+_check_identifier_rest      = lambda c: c in string.ascii_letters + string.digits + "_"
 _check_int                  = lambda c: c in string.digits[1:]
 _check_int_rest             = lambda c: c in string.digits
 _check_char                 = lambda c: (c in string.printable and c != "\\" and c != "\'")
@@ -131,7 +147,7 @@ ST_ESCAPED_CHAR             = State("ST_ESCAPED_CHAR",
                                     False, 
                                     None)
 # Hack
-ST_STRING_START._next_state =       [ (None, True, _check_string_char)
+ST_STRING_START.next_state =        [ (None,              True,  _check_string_char)
                                     , (ST_ESCAPED_CHAR,   False, _check_escaped_char_start)
                                     , (ST_STRING_END,     False, _check_string_quote)
                                     ]
@@ -183,8 +199,8 @@ ST_ASSIGNMENT               = State("ST_ASSIGNMENT",
 
 ST_FORBIDDEN_OP1            = State("ST_FORBIDDEN_OP1", 
                                     [], 
-                                    False, 
-                                    None)
+                                    True, 
+                                    TK_FOP)
 
 ST_ADD                      = State("ST_ADD", 
                                     [ (ST_FORBIDDEN_OP1, False, _check_add) ], 
@@ -246,8 +262,8 @@ ST_LTEQ                     = State("ST_LTEQ",
                                     TK_LTEQ)
 ST_FORBIDDEN_OP2            = State("ST_FORBIDDEN_OP2", 
                                     [ (ST_FORBIDDEN_OP1, False, _check_equals) ], 
-                                    False, 
-                                    None)
+                                    True, 
+                                    TK_FOP)
 
 ST_LT                       = State("ST_LT", 
                                     [ (ST_LTEQ,          False, _check_equals) 
@@ -263,15 +279,15 @@ ST_GTEQ                     = State("ST_GTEQ",
 
 ST_FORBIDDEN_OP4            = State("ST_FORBIDDEN_OP4", 
                                     [ (ST_FORBIDDEN_OP1, False, _check_equals) ], 
-                                    False, 
-                                    None)
+                                    True, 
+                                    TK_FOP)
 
 ST_FORBIDDEN_OP3            = State("ST_FORBIDDEN_OP3", 
                                     [ (ST_FORBIDDEN_OP1, False, _check_equals) 
                                     , (ST_FORBIDDEN_OP4, False, _check_gt)
                                     ], 
-                                    False, 
-                                    None)
+                                    True, 
+                                    TK_FOP)
 
 ST_GT                       = State("ST_GT",
                                     [ (ST_GTEQ,          False, _check_equals)
@@ -282,8 +298,8 @@ ST_GT                       = State("ST_GT",
 
 ST_FORBIDDEN_OP5            = State("ST_FORBIDDEN_OP5", 
                                     [ (ST_FORBIDDEN_OP1, False, _check_equals) ], 
-                                    False, 
-                                    None)
+                                    True, 
+                                    TK_FOP)
 
 ST_INITIAL                  = State("ST_INITIAL",
                                     [ (ST_IDENTIFIER,       False, _check_identifier)

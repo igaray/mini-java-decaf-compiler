@@ -85,9 +85,9 @@ class Scanner(object):
             self.col += 1
 
         if (ch == "/"):
-            if ((self.cursor + 1) < len(self._file_data)):
+            if ((self.cursor + 1) < len(self.file_data)):
                 if (self.file_data[self.cursor + 1] == "*"):
-                    raise LexicalError(self.line, self.col - 1, "Unclosed comment.")
+                    raise LexicalError(self.line, self.col, "Unclosed comment.")
 
         # This checks for the occurrence of */ which might indicate an 
         # unopened comment.
@@ -102,8 +102,8 @@ class Scanner(object):
         return ch
 
     def get_token(self):
-        self._state         = ST_INITIAL
-        self._current_token = Token()
+        self.state         = ST_INITIAL
+        self.current_token = Token()
 
         if ((len(self.current_char) == 0) or (self.current_char in self.whitespace)):
             self.current_char = self.next_char()
@@ -118,29 +118,32 @@ class Scanner(object):
         # if current_char is " " then call next_char to consume whitespace
         if (self.current_char == " "):
             self.current_char = self.next_char()
-            if (len(self._current_char) == 0):
+            if (len(self.current_char) == 0):
                 self.current_token.type   = TK_EOF
                 self.current_token.lexeme = "EOF"
                 self.prev_token           = self.current_token
                 return self.current_token
             self.prev_token = None
 
-        self.current_token.line = self.line
-        self.current_token.col  = self.col
-
-        self.state = self.state.proc(self.current_char, 
-                                     self.line, 
-                                     self.col - 1)
-
         # check whether we must enter 'literal string mode'
         self.is_string = False
         if (self.current_char == "\""):
             self.is_string = True
 
+        self.current_token.line = self.line
+        self.current_token.col  = self.col
+
+        #print "proc", self.current_char, self.line, (self.col), "=", 
+        self.state = self.state.proc(self.current_char, 
+                                     self.line, 
+                                     self.col)
+        #if self.state != None: print self.state.description 
+        #else: print "None"
+
         # main FSM loop
         # the FSM implementation is ingenious but I dislike that the 
         # FSM logic is spread out between the scanner and state classes
-        while self.state != None:
+        while (self.state != None):
             if (len(self.current_char) == 0):
                 self.current_token.type   = TK_EOF
                 self.current_token.lexeme = "EOF"
@@ -156,9 +159,12 @@ class Scanner(object):
                 self.is_string = False
 
             # execute the state procedure
+            #print "proc", self.current_char, self.line, (self.col), "=", 
             self.state = self.state.proc(self.current_char,
                                          self.line,
-                                         self.col - len(self.current_token.lexeme) - 1)
+                                         self.col)
+            #if self.state != None: print self.state.description 
+            #else: print "None"
         # end main FSM loop
 
         # check for identifiers in the reserved words set
@@ -170,6 +176,12 @@ class Scanner(object):
             raise LexicalError(self.current_token.line, 
                                self.current_token.col, 
                                "Forbidden word: " + self.current_token.lexeme)
+
+        # check for forbidden operators
+        if (self.current_token.type == TK_FOP):
+            raise LexicalError(self.current_token.line, 
+                               self.current_token.col, 
+                               "Forbidden operator: " + self.current_token.lexeme)
 
         # check for errors
         if (self.prev_token != None):

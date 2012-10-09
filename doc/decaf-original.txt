@@ -1,0 +1,89 @@
+DECAF GRAMMAR
+
+<start>                 ::= <class>+
+
+<class>                 ::= class <identifier> <super>? { <field>* <ctor>* <method>* }
+
+<super>                 ::= extends <identifier>
+
+<field>                 ::= <type> <var_declarator_list> ;
+
+<method>                ::= <method_type> <identifier> <formal_args> <block>
+
+<ctor>                  ::= <identifier> <formal_args> <block>
+
+<formal_args>           ::= ( <formal_arg_list>? )
+
+<formal_arg_list>       ::= <formal_arg>
+<formal_arg_list>       ::= <formal_arg> , <formal_arg_list>
+
+<formal_arg>            ::= <type> <identifier>
+
+<method_type>           ::= void
+<method_type>           ::= <type>
+
+<type>                  ::= <primitive_type>
+<type>                  ::= <identifier>
+
+<primitive_type>        ::= boolean
+<primitive_type>        ::= char
+<primitive_type>        ::= int
+<primitive_type>        ::= String
+
+<var_declarator_list>   ::= <identifier> , <var_declarator_list>
+<var_declarator_list>   ::= <identifier>
+
+<block>                 ::= { <statement>* }
+
+<statement>             ::= ;
+<statement>             ::= if ( <expression> ) <statement>
+<statement>             ::= if ( <expression> ) <statement> else <statement>
+<statement>             ::= return <expression>? ;
+<statement>             ::= <block>
+
+<expressions>           ::= <expression> <binary_op> <expression>
+<expressions>           ::= <unary_op> <expression>
+<expressions>           ::= <primary>
+
+<binary_op>             ::= =
+<binary_op>             ::= || 
+<binary_op>             ::= &&
+<binary_op>             ::= ==
+<binary_op>             ::= !=
+<binary_op>             ::= <
+<binary_op>             ::= >
+<binary_op>             ::= <=
+<binary_op>             ::= >=
+<binary_op>             ::= +
+<binary_op>             ::= -
+<binary_op>             ::= *
+<binary_op>             ::= /
+<binary_op>             ::= %
+
+<unary_op>              ::= !
+<unary_op>              ::= +
+<unary_op>              ::= -
+
+<primary>               ::= <new_expr>
+<primery>               ::= <identifier>
+
+<new_expr>              ::= <literal>
+<new_expr>              ::= this
+<new_expr>              ::= this . <identifier>
+<new_expr>              ::= ( <expression> )
+<new_expr>              ::= new <identifier> <actual_args>
+<new_expr>              ::= <identifier> <actual_args>
+<new_expr>              ::= <primary> . <identifier> <actual_args>
+<new_expr>              ::= super . <identifier> <actual_args>
+
+<literal>               ::= null
+<literal>               ::= true
+<literal>               ::= false
+<literal>               ::= <int_literal>
+<literal>               ::= <char_literal>
+<literal>               ::= <string_literal>
+
+<actual_args>           ::= ( <expr_list>? )
+
+<expr_list>             ::= <expression>
+<expr_list>             ::= <expression> , <expr_list>
