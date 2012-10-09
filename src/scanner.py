@@ -133,12 +133,9 @@ class Scanner(object):
         self.current_token.line = self.line
         self.current_token.col  = self.col
 
-        #print "proc", self.current_char, self.line, (self.col), "=", 
         self.state = self.state.proc(self.current_char, 
-                                     self.line, 
-                                     self.col)
-        #if self.state != None: print self.state.description 
-        #else: print "None"
+                                     self.current_token.line, 
+                                     self.current_token.col)
 
         # main FSM loop
         # the FSM implementation is ingenious but I dislike that the 
@@ -159,12 +156,9 @@ class Scanner(object):
                 self.is_string = False
 
             # execute the state procedure
-            #print "proc", self.current_char, self.line, (self.col), "=", 
             self.state = self.state.proc(self.current_char,
-                                         self.line,
-                                         self.col)
-            #if self.state != None: print self.state.description 
-            #else: print "None"
+                                         self.current_token.line,
+                                         self.current_token.col)
         # end main FSM loop
 
         # check for identifiers in the reserved words set

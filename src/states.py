@@ -49,13 +49,6 @@ class State(object):
             raise LexicalError(line, col, "Unrecognized token.")
         return next_state
 
-        #if self.accepts and next_state == None:
-        #    return None
-        #elif next_state != None:
-        #    return next_state
-        #else:
-        #    raise LexicalError(line, col, "Unknown token.")
-
     def get_token_type(self):
         return self.token_type
 
@@ -147,7 +140,7 @@ ST_ESCAPED_CHAR             = State("ST_ESCAPED_CHAR",
                                     False, 
                                     None)
 # Hack
-ST_STRING_START.next_state =        [ (None,              True,  _check_string_char)
+ST_STRING_START.next_state  =       [ (None,              True,  _check_string_char)
                                     , (ST_ESCAPED_CHAR,   False, _check_escaped_char_start)
                                     , (ST_STRING_END,     False, _check_string_quote)
                                     ]
