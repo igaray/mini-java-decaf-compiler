@@ -38,26 +38,26 @@ def usage():
 
 def run_scanner(input_filepath, output_filepath = None):
     try:
-        lex = Scanner(input_filepath)
         if (output_filepath != None):
             output_file = open(output_filepath, 'w')
             sys.stdout  = output_file
-
-        while True:
-            try:
-                token = lex.get_token()
-                if token.type == TK_EOF:
-                    break
-            except LexicalError as le:
-                pretty_print_error_message(input_filepath, le)
-                sys.exit()
-            print token    
-
-        if (output_filepath != None):
-            output_file.close()
     except IOError as ioe:
         print "Error: no such file."
         sys.exit()
+
+    scanner = Scanner(input_filepath)
+    while True:
+        try:
+            token = scanner.get_token()
+            if token.type == TK_EOF:
+                break
+        except LexicalError as le:
+            pretty_print_error_message(input_filepath, le)
+            sys.exit()
+        print token    
+
+    if (output_filepath != None):
+        output_file.close()
 
 if __name__ == "__main__":
     argv_len = len(sys.argv)

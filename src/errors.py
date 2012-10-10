@@ -7,7 +7,7 @@ class LexicalError(Exception):
     def __str__(self):
         return self.message
 
-class SyntaxError(Exception):
+class SyntacticError(Exception):
     def __init__(self, parser, msg = "Error de sintaxis."):
         self.line    = parser.current_token().line()
         self.col     = parser.current_token().col()

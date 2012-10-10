@@ -1,7 +1,7 @@
 from scanner        import Scanner
 from tokens         import *
 from first_follow   import *
-from errors         import SyntaxError, SemanticError
+from errors         import SyntacticError, SemanticError
 
 #import mj.mjprimary as mjp
 #import mj.mjclass   as mjc
@@ -10,37 +10,34 @@ from errors         import SyntaxError, SemanticError
 class Parser(object):
     def __init__(self,  path, debug = False, system_classes = ""):
         self._debug = debug
-        if (self._debug):
-            self._log       = open('DEBUG.log', 'w')
+        if (self.debug):
+            self.log       = open('DEBUG.log', 'w')
         else:
-            self._log       = None
-        self._current_token = None
-        self._scanner       = Scanner(path, system_classes)
+            self.log       = None
+        self.current_token = None
+        self.scanner       = Scanner(path, system_classes)
 
     def parse(self, st = None):
         self.update_token()
         return self.start()
 
-    def current_token(self):
-        return self._current_token
-
     def update_token(self):
-        self._current_token = self._scanner.get_token()
-        #print(self._current_token)
+        self.current_token = self._scanner.get_token()
+        #print(self.current_token)
 
     def match_token(self, tokentype):
-        return self._current_token.type() == tokentype
+        return self.current_token.type == tokentype
 
     def token_in(self, first):
-        return (self._current_token.type() in first)
+        return (self.current_token.type in first)
 
     def DEBUG(self, msg):
-        if (self._debug):
-            self._log.write(msg + "\n")
+        if (self.debug):
+            self.log.write(msg + "\n")
             #print(msg)
             if (msg in ["ERROR", "SYNTAX OK"]):
-                self._log.flush()
-                self._log.close()
+                self.log.flush()
+                self.log.close()
 
     ##################################################################
     def start(self, st = None):
@@ -71,14 +68,14 @@ class Parser(object):
             errormsg = "Expected: classDef got "
             errormsg += self.current_token().lexeme()
             errormsg += ".\nYou must have at least one class defined by the classDef keyword."
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("m TK_CLASSDEF")
         self.update_token()
         if not (self.match_token(TK_IDENTIFIER)):
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected an identifier got " + self.current_token().lexeme()
             errormsg += ".\nYou must declare your class with a valid identifier."
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("m TK_IDENTIFIER")
         self.update_token()
         if (self.token_in(first_super)):
@@ -92,7 +89,7 @@ class Parser(object):
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected an { got: " + self.current_token().lexeme()
             errormsg += ".\nThe class declaration must have a body, starting with an opening brace."
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("m TK_BRACE_OPEN")
         self.update_token()
         self.classdef_body_rest()
@@ -100,7 +97,7 @@ class Parser(object):
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected an } got: " + self.current_token().lexeme()
             errormsg += ".\nYou must close the classDef body with a closing brace."
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("m TK_BRACE_CLOSE")
         self.update_token()
         self.DEBUG("< classdef_body")
@@ -119,7 +116,7 @@ class Parser(object):
                 errormsg = "Expected an identifier got " + self.current_token().lexeme()
                 errormsg += ".\nIt seems you are defining a method.\n"
                 errormsg += "You must provide a valid identifier for the method name."
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_IDENTIFIER")
             self.update_token()
             self.classdef_method_rest()
@@ -139,7 +136,7 @@ class Parser(object):
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected an identifier or the beginning of a list of formal arguments, got " 
             errormsg += self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< classdef_ctor_or_method")
 
     def classdef_ctor_rest(self, st = None):
@@ -149,7 +146,7 @@ class Parser(object):
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected an ; got " + self.current_token().lexeme()
             errormsg += ".\nYou must terminate the declaration of a constructor with ;"
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("m TK_SEMICOLON")
         self.update_token()
         self.classdef_body_rest()        
@@ -163,7 +160,7 @@ class Parser(object):
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected an ; got " + self.current_token().lexeme()
             errormsg += ".\nYou must terminate a method declaration in with a semicolon."
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("m TK_SEMICOLON")
         self.update_token()
         self.classdef_methods()
@@ -181,7 +178,7 @@ class Parser(object):
         else:
             DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected: a classDef method type, got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< classdef_methods")
 
     def classdef_method(self, st = None):
@@ -191,14 +188,14 @@ class Parser(object):
         if not (self.match_token(TK_IDENTIFIER)):
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected: identifier got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("m TK_IDENTIFIER")
         self.update_token()
         self.formal_args()
         if not (self.match_token(TK_SEMICOLON)):
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected: ; got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("m TK_SEMICOLON")
         self.update_token()
         self.DEBUG("< classdef_method")
@@ -222,7 +219,7 @@ class Parser(object):
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< class_start_rest")
 
     def classs(self, st = None):
@@ -233,13 +230,13 @@ class Parser(object):
             errormsg = "Expected class keyword got " 
             errormsg += str(self.current_token().type()) #.lexeme()
             errormsg += ".\nYou must have at least one class defined by the class keyword."
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("m TK_CLASS")
         self.update_token()
         if not (self.match_token(TK_IDENTIFIER)):
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected: identifier got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("m TK_IDENTIFIER")
         self.update_token()
         self.superr()
@@ -252,14 +249,14 @@ class Parser(object):
         if not (self.match_token(TK_BRACE_OPEN)):
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected: { got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("m TK_BRACE_OPEN")
         self.update_token()
         self.class_body_rest()
         if not (self.match_token(TK_BRACE_CLOSE)):
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected: } got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("m TK_BRACE_CLOSE")
         self.update_token()
         self.DEBUG("< class_body")
@@ -278,7 +275,7 @@ class Parser(object):
             if not (self.match_token(TK_IDENTIFIER)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: identifier got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_IDENTIFIER")
             self.class_method_rest()
         elif (self.token_in(first_primitive_type)):
@@ -287,7 +284,7 @@ class Parser(object):
             if not (self.match_token(TK_IDENTIFIER)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: identifier got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_IDENTIFIER")
             self.update_token()
             self.class_field_or_method()
@@ -297,7 +294,7 @@ class Parser(object):
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< class_body_rest")
 
     def class_field_ctor_or_method(self, st = None):
@@ -313,7 +310,7 @@ class Parser(object):
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme()) 
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< class_field_ctor_or_method")
 
     def class_field_or_method(self, st = None):
@@ -327,7 +324,7 @@ class Parser(object):
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme()) 
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< class_field_or_method")
 
     def class_var_declaration_list(self, st = None):
@@ -339,7 +336,7 @@ class Parser(object):
             if not (self.match_token(TK_IDENTIFIER)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: identifier got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_IDENTIFIER")
             self.update_token()
             self.class_var_declaration_list()
@@ -351,7 +348,7 @@ class Parser(object):
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme()) 
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< class_var_declaration_list")
 
     def class_method_rest(self, st = None):
@@ -374,7 +371,7 @@ class Parser(object):
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme()) 
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< class_methods")
 
     def class_method(self, st = None):
@@ -384,7 +381,7 @@ class Parser(object):
         if not (self.match_token(TK_IDENTIFIER)):
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected: identifier got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("m TK_IDENTIFIER")
         self.update_token()
         self.formal_args()
@@ -412,7 +409,7 @@ class Parser(object):
             if not (self.match_token(TK_IDENTIFIER)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: identifier got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.update_token()
             self.class_method_rest()
         elif (self.token_in(follow_class_ctor_or_method)):
@@ -421,7 +418,7 @@ class Parser(object):
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< class_ctor_or_method")
 
     def class_ctor_or_method_rest(self, st = None):
@@ -437,7 +434,7 @@ class Parser(object):
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme()) 
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< class_ctor_or_method_rest")
 
     def superr(self, st = None):
@@ -449,7 +446,7 @@ class Parser(object):
             if not (self.match_token(TK_IDENTIFIER)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: identifier got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_IDENTIFIER")
             self.update_token()
         elif (self.token_in(follow_super)):
@@ -458,7 +455,7 @@ class Parser(object):
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme()) 
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< superr")
 
     def formal_args(self, st = None):
@@ -467,7 +464,7 @@ class Parser(object):
         if not (self.match_token(TK_PAREN_OPEN)):
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected: ( got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("m TK_PAREN_OPEN")
         self.update_token()
         self.formal_args_rest()
@@ -485,13 +482,13 @@ class Parser(object):
             if not (self.match_token(TK_PAREN_CLOSE)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: ) got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_PAREN_CLOSE")
             self.update_token()
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme()) 
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< formal_args_rest")
 
     def formal_arg_list(self, st = None):
@@ -515,7 +512,7 @@ class Parser(object):
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme()) 
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< formal_arg_list_rest")
 
     def formal_arg(self, st = None):
@@ -525,7 +522,7 @@ class Parser(object):
         if not (self.match_token(TK_IDENTIFIER)):
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected: identifier got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("m TK_IDENTIFIER")
         self.update_token()
         self.DEBUG("< formal_arg")
@@ -537,7 +534,7 @@ class Parser(object):
         if not (self.token_in([TK_BOOLEAN, TK_CHAR, TK_INT, TK_STRING, TK_IDENTIFIER, TK_VOID])):
             self.DEBUG("ERROR CT: " + self.current_token().lexeme()) 
             errormsg = "Expected a method type, got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("m method type")
         self.update_token()
         self.DEBUG("< method_type")
@@ -549,7 +546,7 @@ class Parser(object):
         if not (self.token_in([TK_BOOLEAN, TK_CHAR, TK_INT, TK_STRING, TK_IDENTIFIER])):
             self.DEBUG("ERROR CT: " + self.current_token().lexeme()) 
             errormsg = "Expected a type, got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("m type")
         self.update_token()
         self.DEBUG("< typee")
@@ -561,7 +558,7 @@ class Parser(object):
         if not (self.token_in([TK_BOOLEAN, TK_CHAR, TK_INT, TK_STRING, TK_VOID])):
             self.DEBUG("ERROR CT: " + self.current_token().lexeme()) 
             errormsg = "Expected a primitive type or void, got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("m primitive type or void")
         self.update_token()
         self.DEBUG("< primitive_type_void")
@@ -575,7 +572,7 @@ class Parser(object):
         if not (self.token_in([TK_BOOLEAN, TK_CHAR, TK_INT, TK_STRING])):
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected a primitive type got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("m primitive type")
         self.update_token()
         self.DEBUG("< primitive_type")
@@ -586,14 +583,14 @@ class Parser(object):
         if not (self.match_token(TK_BRACE_OPEN)):
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected: { got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("m TK_BRACE_OPEN")
         self.update_token()
         self.statements()
         if not (self.match_token(TK_BRACE_CLOSE)):
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected: } got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("m TK_BRACE_CLOSE")
         self.update_token()
         self.DEBUG("< block")
@@ -610,7 +607,7 @@ class Parser(object):
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme()) 
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< statements")
 
     def statement(self, st = None):
@@ -624,7 +621,7 @@ class Parser(object):
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme()) 
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< statement")
 
     def open_statement(self, st = None):
@@ -635,14 +632,14 @@ class Parser(object):
             if not (self.match_token(TK_PAREN_OPEN)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: ( got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_PAREN_OPEN")
             self.update_token()
             self.expression()
             if not (self.match_token(TK_PAREN_CLOSE)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: ) got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_PAREN_CLOSE")
             self.update_token()
             if (self.token_in(first_closed_statement)):
@@ -651,7 +648,7 @@ class Parser(object):
                 if not (self.match_token(TK_ELSE)):
                     self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                     errormsg = "Expected: ) got " + self.current_token().lexeme()
-                    raise SyntaxError(self, errormsg)
+                    raise SyntacticError(self, errormsg)
                 self.open_statement()
             elif (self.token_in(first_statement)):
                 #open_statement ::= TK_IF    TK_PAREN_OPEN expression TK_PAREN_CLOSE statement
@@ -659,7 +656,7 @@ class Parser(object):
             else:
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected:  got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
         elif (self.match_token(TK_FOR)):
             #open_statement ::= TK_FOR   TK_PAREN_OPEN expression TK_SEMICOLON expression TK_SEMICOLON expression TK_PAREN_CLOSE open_statement
             self.DEBUG("m TK_FOR")
@@ -667,28 +664,28 @@ class Parser(object):
             if not (self.match_token(TK_PAREN_OPEN)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: ( got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_PAREN_OPEN")
             self.update_token()
             self.expression()
             if not (self.match_token(TK_SEMICOLON)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: ; got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_SEMICOLON")
             self.update_token()
             self.expression()
             if not (self.match_token(TK_SEMICOLON)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: ; got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_SEMICOLON")
             self.update_token()
             self.expression()
             if not (self.match_token(TK_PAREN_CLOSE)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: ) got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_PAREN_CLOSE")
             self.update_token()
             self.open_statement()
@@ -699,21 +696,21 @@ class Parser(object):
             if not (self.match_token(TK_PAREN_OPEN)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: ( got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_PAREN_OPEN")
             self.update_token()
             self.expression()
             if not (self.match_token(TK_PAREN_CLOSE)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: ) got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_PAREN_CLOSE")
             self.update_token()
             self.open_statement()
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< open_statement")
 
     def closed_statement(self, st = None):
@@ -725,21 +722,21 @@ class Parser(object):
             if not (self.match_token(TK_PAREN_OPEN)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: ( got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_PAREN_OPEN")
             self.update_token()
             self.expression()
             if not (self.match_token(TK_PAREN_CLOSE)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: ) got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_PAREN_CLOSE")
             self.update_token()
             self.closed_statement()
             if not (self.match_token(TK_ELSE)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: else keyword got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_ELSE")
             self.update_token()
             self.closed_statement()
@@ -750,28 +747,28 @@ class Parser(object):
             if not (self.match_token(TK_PAREN_OPEN)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: ( got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_PAREN_OPEN")
             self.update_token()
             self.expression()
             if not (self.match_token(TK_SEMICOLON)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: ; got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_SEMICOLON")
             self.update_token()
             self.expression()
             if not (self.match_token(TK_SEMICOLON)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: ; got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_SEMICOLON")
             self.update_token()
             self.expression()
             if not (self.match_token(TK_PAREN_CLOSE)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: ) got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_PAREN_CLOSE")
             self.update_token()
             self.closed_statement()
@@ -782,14 +779,14 @@ class Parser(object):
             if not (self.match_token(TK_PAREN_OPEN)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: ( got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_PAREN_OPEN")
             self.update_token()
             self.expression()
             if not (self.match_token(TK_PAREN_CLOSE)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: ) got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_PAREN_CLOSE")
             self.update_token()
             self.closed_statement()
@@ -799,7 +796,7 @@ class Parser(object):
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< closed_statement")
 
     def simple_statement(self, st = None):
@@ -822,7 +819,7 @@ class Parser(object):
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme()) 
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< simple_statement")
 
     def statement_return_rest(self, st = None):
@@ -837,13 +834,13 @@ class Parser(object):
             if not (self.match_token(TK_SEMICOLON)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: ; got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_SEMICOLON")
             self.update_token()
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme()) 
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< statement_return_rest")
 
     def expression(self, st = None):
@@ -866,7 +863,7 @@ class Parser(object):
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme()) 
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< assignment_expr")
 
     def logical_expr(self, st = None):
@@ -887,7 +884,7 @@ class Parser(object):
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme()) 
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< logical_expr_rest")
 
     def logical_or_expr(self, st = None):
@@ -910,7 +907,7 @@ class Parser(object):
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme()) 
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< logical_or_expr_rest")
 
     def logical_and_expr(self, st = None):
@@ -933,7 +930,7 @@ class Parser(object):
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme()) 
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< logical_and_expr_rest")
 
     def equality_expr(self, st = None):
@@ -961,7 +958,7 @@ class Parser(object):
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< equality_expr_rest")
 
     def relational_expr(self, st = None):
@@ -999,7 +996,7 @@ class Parser(object):
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< relational_expr_rest")
 
     def term_expr(self, st = None):
@@ -1027,7 +1024,7 @@ class Parser(object):
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< term_expr_rest")
 
     def factor_expr(self, st = None):
@@ -1060,7 +1057,7 @@ class Parser(object):
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< factor_expr_rest")
 
     def unary_expr(self, st = None):
@@ -1086,7 +1083,7 @@ class Parser(object):
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< unary_expr")
 
     def primary(self, st = None):
@@ -1103,7 +1100,7 @@ class Parser(object):
             if not (self.match_token(TK_PAREN_CLOSE)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: ) got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_PAREN_CLOSE")
             self.update_token()
             self.primary_rest()
@@ -1114,7 +1111,7 @@ class Parser(object):
             if not (self.match_token(TK_IDENTIFIER)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: identifier got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_IDENTIFIER")
             self.update_token()
             self.actual_args()
@@ -1126,13 +1123,13 @@ class Parser(object):
             if not (self.match_token(TK_PERIOD)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: . got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_PERIOD")
             self.update_token()
             if not (self.match_token(TK_IDENTIFIER)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: identifier got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_IDENTIFIER")
             self.update_token()
             self.actual_args()
@@ -1152,7 +1149,7 @@ class Parser(object):
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< primary")
 
     def primary_rest(self, st = None):
@@ -1164,7 +1161,7 @@ class Parser(object):
             if not (self.match_token(TK_IDENTIFIER)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: identifier got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_IDENTIFIER")
             self.update_token()
             self.actual_args()
@@ -1175,7 +1172,7 @@ class Parser(object):
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< primary_rest")
 
     def primary_rest_this(self, st = None):
@@ -1187,7 +1184,7 @@ class Parser(object):
             if not (self.match_token(TK_IDENTIFIER)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: identifier got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_IDENTIFIER")
             self.update_token()
             self.primary_rest_id()
@@ -1200,7 +1197,7 @@ class Parser(object):
         #else:
         #    self.DEBUG("ERROR CT: " + self.current_token().lexeme())
         #    errormsg = "Expected:  got " + self.current_token().lexeme()
-        #    raise SyntaxError(self, errormsg)
+        #    raise SyntacticError(self, errormsg)
         self.DEBUG("< primary_rest_this")
 
     def primary_rest_id(self, st = None):
@@ -1219,7 +1216,7 @@ class Parser(object):
         #else:
         #    self.DEBUG("ERROR CT: " + self.current_token().lexeme())
         #    errormsg = "Expected:  got " + self.current_token().lexeme()
-        #    raise SyntaxError(self, errormsg)
+        #    raise SyntacticError(self, errormsg)
         self.DEBUG("< primary_rest_id")
 
     def literal(self, st = None):
@@ -1233,7 +1230,7 @@ class Parser(object):
         if not (self.token_in([TK_NULL, TK_TRUE, TK_FALSE, TK_INT_LITERAL, TK_CHAR_LITERAL, TK_STRING_LITERAL])):
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected a literal value, got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("m LITERAL")
         self.update_token()
         self.DEBUG("< literal")
@@ -1244,7 +1241,7 @@ class Parser(object):
         if not (self.match_token(TK_PAREN_OPEN)):
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected: ) got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("m TK_PAREN_OPEN")
         self.update_token()
         self.actual_args_rest()
@@ -1263,13 +1260,13 @@ class Parser(object):
             if not (self.match_token(TK_PAREN_CLOSE)):
                 self.DEBUG("ERROR CT: " + self.current_token().lexeme())
                 errormsg = "Expected: ) got " + self.current_token().lexeme()
-                raise SyntaxError(self, errormsg)
+                raise SyntacticError(self, errormsg)
             self.DEBUG("m TK_PAREN_CLOSE")
             self.update_token()
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< actual_args_rest")
 
     def expr_list(self, st = None):
@@ -1292,6 +1289,6 @@ class Parser(object):
         else:
             self.DEBUG("ERROR CT: " + self.current_token().lexeme())
             errormsg = "Expected:  got " + self.current_token().lexeme()
-            raise SyntaxError(self, errormsg)
+            raise SyntacticError(self, errormsg)
         self.DEBUG("< expr_list_rest")
 
