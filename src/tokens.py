@@ -4,7 +4,7 @@ def isToken(obj):
 class Token(object):
     def __init__(self):
         self.lexeme = ""
-        self.line   = 1
+        self.line   = 0
         self.col    = 0
         self.type   = 0
         self.value  = None

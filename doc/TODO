@@ -14,9 +14,9 @@ TODO:
     [x] fixed first token in line wrong column reporting
     [x] fixed first token in first line wrong column reporting
     [x] fix explosion when input file does not exist
-    [ ] mejores mensajes de error
-    [ ] string no cerrado
-    [ ] character mal formado
+    [x] mejores mensajes de error
+    [x] string no cerrado
+    [x] caracter mal formado
 
 odin, gi meg styrke, visdom og kunnskap
 odin, give me strength, wisdom and knowledge

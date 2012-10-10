@@ -3,10 +3,6 @@ from   parser    import *
 from   tokens    import *
 from   errors    import LexicalError
 
-#import mj.mjprimary  as mjp
-#import mj.mjclass    as mjc
-#from   mj.mjts   import mjTS
-
 def pretty_print_error_message(input_filepath, exc):
     input_file = open(input_filepath, 'r')
     line       = exc.line
@@ -18,28 +14,28 @@ def pretty_print_error_message(input_filepath, exc):
     while (i < line):
         line_str = input_file.readline()
         i += 1
-
     if len(line_str) > 0 and line_str[-1] == "\n":
         print line_str,
     else:
         print line_str
-    i = 0
+    i = 1
     while (i < col):
         sys.stdout.write("-")
         i += 1
     print "^"
     input_file.close()
-    sys.exit()
 
 def usage():
     usage_str = """
-    Error: wrong number of arguments.
     Usage:
         parser INPUTFILE [OUTPUTFILE]
 
     """
     print usage_str
 
+def run_parser(input_filepath, output_filepath = None):
+    pass
+    
 if __name__ == "__main__":
     argv_len = len(sys.argv)
     if ((argv_len == 3) or (argv_len == 2)):

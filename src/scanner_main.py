@@ -7,8 +7,8 @@ from errors  import LexicalError
 
 def pretty_print_error_message(input_filepath, exc):
     input_file = open(input_filepath, 'r')
-    line = exc.line
-    col  = exc.col
+    line       = exc.line
+    col        = exc.col
     print exc
     print "In line %s:%s" % (line, col)
     i = 0
