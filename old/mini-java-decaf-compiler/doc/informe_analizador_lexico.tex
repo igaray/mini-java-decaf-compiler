@@ -1,0 +1,987 @@
+
+\documentclass [a4paper,titlepage]{report}
+%\pagestyle{plain}
+\usepackage{makeidx}
+\usepackage[spanish]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{enumerate}
+\usepackage{longtable}
+\usepackage{graphicx}
+\usepackage{ucs}
+\usepackage{textcomp}
+\usepackage{alltt}
+\usepackage{listings}
+\usepackage{moreverb}
+\usepackage{upquote}
+
+%\lstset{basicstyle=\footnotesize\ttfamily,showstringspaces=false,breaklines,frame=single, rulecolor=\color{ListingBorderColor}, xleftmargin=0cm, linewidth=0.95\textwidth}
+
+\setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
+
+\title{Analizador Léxico \\Compiladores e Intérpretes \\2012}
+
+\author{Garay, I\~{n}aki LU 67387}
+
+\makeindex
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\newpage
+
+\section{Uso}
+
+\subsection{Invocación}
+
+Utilizando el intérprete de Python para correr el script del módulo principal:
+
+\begin{verbatim}
+    C:\> python.exe main.py <archivo_entrada> [<archivo_salida>]
+\end{verbatim}
+
+La especificación del archivo de salida es opcional. 
+Si se omite, el analizador léxico mostrará su salida por pantalla.
+Si no se especifica un archivo de entrada, o se pasan más argumentos que el 
+archivo de entrada y el de salida, el analizador léxico mostrará un mensaje 
+explicando el uso por linea de comando.
+
+\subsection{Interpretación de Salida}
+
+Mientras procesa el archivo, el analizador léxico mostrará en su salida los
+tokens reconocidos en una tabla, con el siguiente formato:
+
+\begin{verbatim}
+$ python2 main.py ./tests/006-err-ampersand.java 
+1:0     -   <INT_TYPE>      :: int
+1:3     -   <SEPARATOR>     ::  
+1:4     -   <IDENTIFIER>    :: fun
+1:7     -   <PAREN_OPEN>    :: (
+1:8     -   <INT_TYPE>      :: int
+1:11    -   <SEPARATOR>     ::  
+1:12    -   <IDENTIFIER>    :: a
+1:13    -   <PAREN_CLOSE>   :: )
+1:14    -   <SEPARATOR>     ::  
+1:15    -   <BRACE_OPEN>    :: {
+1:16    -   <SEPARATOR>     ::  
+2:4     -   <IDENTIFIER>    :: un
+2:6     -   <SEPARATOR>     ::  
+ERROR: Line: 2, Col: 7 :: Token no reconocido.
+In line 2:7
+    un & amper;
+-------^
+\end{verbatim}
+
+La primera columna de la tabla indica el número de linea y la columna en la cual
+se encontró el token. La siguiente columna indica el tipo del token. La tercera
+columna muestra el lexema del token.
+
+\subsection{Bugs conocidos}
+\begin{itemize}
+
+\item El reporte de la columna en la cual se detecta un error léxico
+no siempre es correcto.
+
+\item El reporte de la linea en la cual se detecta un error léxico no 
+es correcto si la linea anterior termina en espacios.
+
+\item La detección del operador prohibido
+\texttt{\textless{}\textless{}\textless{}=} no es correcto.
+
+\end{itemize}
+
+\section{Análisis Léxico}
+
+\subsection{Alfabeto de entrada}
+
+El alfabeto de entrada son todos los caracteres de la codificación ASCII.
+
+\subsection{Definición de Tokens}
+
+Las expresiones regulares se expresaron utilizando la sintaxis válida para JLex.
+
+La siguiente tabla muestra los tokens reconocidos por el analizador léxico.
+
+\begin{longtable}{l | l | l}
+\bfseries{Token}     & \bfseries{Expresión Regular}                                          & \bfseries{Ejemplo}                \tabularnewline \endhead
+TK\_IDENTIFIER       & [a-zA-Z\_{}\textbackslash{}\${}][a-zA-Z\_{}\textbackslash{}\${}0-9]*  & identifier                        \tabularnewline
+TK\_INT\_LITERAL     & (0\textbar{}[1-9]([0-9])*)                                            & 42                                \tabularnewline
+TK\_CHAR\_LITERAL    & (\textbackslash{}'[\^{}('\textbackslash{}\textbackslash{})]\textbackslash{}')\textbar{}(\textbackslash{}'[\textbackslash{}\textbackslash{}\textbackslash{}\textbackslash{}\textbar{}\textbackslash{}\textbackslash{}'\textbar{}\textbackslash{}\textbackslash{}\textbackslash{}"\textbar{}\textbackslash{}\textbackslash{}n]\textbackslash{}')  & \textquotesingle{}c\textquotesingle{}   \tabularnewline
+TK\_STRING\_LITERAL  & (\textbackslash{}"\textbackslash{}"\textbar{}\textbackslash{}"([\^{}(\textbackslash{}"\textbackslash{}\textbackslash{})]\textbar{}[\textbackslash{}\textbackslash{}\textbackslash{}\textbackslash{}\textbar{}\textbackslash{}\textbackslash{}'\textbar{}\textbackslash{}\textbackslash{}\textbackslash{}"\textbar{}\textbackslash{}\textbackslash{}n])*\textbackslash{}") & \textquotedbl{}s\textquotedbl{}   \tabularnewline
+TK\_BRACE\_OPEN      & \{{}                                                                  & \{{}                              \tabularnewline
+TK\_BRACE\_CLOSE     & \}{}                                                                  & \}{}                              \tabularnewline
+TK\_PAREN\_OPEN      & \textbackslash{})                                                     & (                                 \tabularnewline
+TK\_PAREN\_CLOSE     & \textbackslash{}(                                                     & )                                 \tabularnewline
+TK\_PERIOD           & .                                                                     & .                                 \tabularnewline
+TK\_COMMA            & ,                                                                     & ,                                 \tabularnewline
+TK\_SEMICOLON        & ;                                                                     & ;                                 \tabularnewline
+TK\_ASSIGNMENT       & =                                                                     & =                                 \tabularnewline
+TK\_ADD              & +                                                                     & +                                 \tabularnewline
+TK\_SUB              & -                                                                     & -                                 \tabularnewline
+TK\_MUL              & *                                                                     & *                                 \tabularnewline
+TK\_DIV              & \textbackslash{}/                                                     & /                                 \tabularnewline
+TK\_MOD              & \%{}                                                                  & \%{}                              \tabularnewline
+TK\_LT               & \textless{}                                                           & \textless{}                       \tabularnewline
+TK\_GT               & \textgreater{}                                                        & \textgreater{}                    \tabularnewline
+TK\_LTEQ             & \textless{}=                                                          & \textless{} =                     \tabularnewline
+TK\_GTEQ             & \textgreater{}=                                                       & \textgreater{} =                  \tabularnewline
+TK\_EQUALS           & ==                                                                    & ==                                \tabularnewline
+TK\_NOTEQUALS        & !=                                                                    & !=                                \tabularnewline
+TK\_NOT              & !                                                                     & !                                 \tabularnewline
+TK\_AND              & \&{}\&{}                                                              & \&{}\&{}                          \tabularnewline
+TK\_OR               & \textbar{}\textbar{}                                                  & \textbar{}\textbar{}              \tabularnewline
+TK\_BOOLEAN          & boolean                                                               & boolean                           \tabularnewline
+TK\_CHAR             & char                                                                  & char                              \tabularnewline
+TK\_CLASS            & class                                                                 & class                             \tabularnewline
+TK\_CLASSDEF         & classDef                                                              & classDef                          \tabularnewline
+TK\_ELSE             & else                                                                  & else                              \tabularnewline
+TK\_EXTENDS          & extends                                                               & extends                           \tabularnewline
+TK\_FALSE            & false                                                                 & false                             \tabularnewline
+TK\_FOR              & for                                                                   & for                               \tabularnewline
+TK\_IF               & if                                                                    & if                                \tabularnewline
+TK\_INT              & int                                                                   & int                               \tabularnewline
+TK\_NEW              & new                                                                   & new                               \tabularnewline
+TK\_NULL             & null                                                                  & null                              \tabularnewline
+TK\_RETURN           & return                                                                & return                            \tabularnewline
+TK\_STRING           & String                                                                & String                            \tabularnewline
+TK\_SUPER            & super                                                                 & super                             \tabularnewline
+TK\_THIS             & this                                                                  & this                              \tabularnewline
+TK\_TRUE             & true                                                                  & true                              \tabularnewline
+TK\_VOID             & void                                                                  & void                              \tabularnewline
+TK\_WHILE            & while                                                                 & while                             \tabularnewline
+TK\_EOF              & \textless{}EOF\textgreater{}                                          & \textless{}EOF\textgreater{}      \tabularnewline
+\end{longtable}
+
+% \noindent
+% Char literal regular expression:
+
+% \begin{verbatim}
+%     (
+%         \'
+%         [ ^(  \'  \\  ) ]
+%         \'
+%     ) 
+% | 
+%     (
+%         \'  
+%         [  \\  \\  
+%         |  \\  \'  
+%         |  \\  \"  
+%         |  \\n  
+%         ]
+%         \'  
+%     )
+% \end{verbatim}
+
+% \noindent
+% String literal regular expression:
+
+% \begin{verbatim}
+% (
+%     \"
+%     \"
+% |  
+%     \"
+%     (   
+%             [  ^(  \"  \\  )  ]
+%         |  
+%             [  \\  \\  
+%             |  \\  \'
+%             |  \\  \"
+%             |  \\  n
+%             ]
+%     )*
+%     \"
+% )
+% \end{verbatim}
+
+\subsection{Operadores Prohibidos}
+
+\begin{longtable}{l | l}
+Operador                                    & Expresión Regular                             \tabularnewline \endhead
+\textasciitilde{}                           & \textasciitilde{}                             \tabularnewline
+?                                           & ?                                             \tabularnewline
+:                                           & :                                             \tabularnewline
+++                                          & ++                                            \tabularnewline
+--                                          & --                                            \tabularnewline
+\&{}                                        & \&{}                                          \tabularnewline
+\textbar{}                                  & \textbar{}                                    \tabularnewline
+\^{}                                        & \^{}                                          \tabularnewline
+\textless{}\textless{}                      & \textless{}\textless{}                        \tabularnewline
+\textgreater{}\textgreater{}                & \textgreater{}\textgreater{}                  \tabularnewline
+\textgreater{}\textgreater{}\textgreater{}  & \textgreater{}\textgreater{}\textgreater{}    \tabularnewline
++=                                          & +=                                            \tabularnewline
+-=                                          & -=                                            \tabularnewline
+*=                                          & *=                                            \tabularnewline
+/=                                          & /=                                            \tabularnewline
+\&{}=                                       & \&{}=                                         \tabularnewline
+\textbar{}=                                 & \textbar{}=                                   \tabularnewline
+\^{}=                                       & \^{}=                                         \tabularnewline
+\%{}=                                       & \%{}=                                         \tabularnewline
+\textless{}\textless{}=                     & \textless{}\textless{}=                       \tabularnewline
+\textgreater{}\textgreater{}=               & \textgreater{}\textgreater{}=                 \tabularnewline
+\textgreater{}\textgreater{}\textgreater{}= & \textgreater{}\textgreater{}\textgreater{}=   \tabularnewline
+\end{longtable}\tabularnewline
+
+\subsection{Palabras Prohibidas}
+
+\begin{verbatim}
+    abstract       interface
+    break          
+    byte           long
+                   native
+    byvalue        none
+    case           operator
+    cast           outer
+    catch          package
+    const          private
+    continue       protected
+    default        public
+    do             rest
+    double         
+    final          short
+    finally        static
+    float          switch
+    future         synchronized
+    generic        throw
+    goto           throws
+    implements     transient
+    import         try
+    inner          var
+    instanceof     volatile
+\end{verbatim}
+
+\section{Gramática}
+
+\subsection{Gramatica original}
+
+\begin{verbatim}
+<start>                 ::= <class>+
+
+<class>                 ::= class <identifier> <super>? 
+                            { <field>* <ctor>* <method>* }
+
+<super>                 ::= extends <identifier>
+
+<field>                 ::= <type> <var_declarator_list> ;
+
+<method>                ::= <method_type> <identifier> 
+                            <formal_args> <block>
+
+<ctor>                  ::= <identifier> <formal_args> <block>
+
+<formal_args>           ::= ( <formal_arg_list>? )
+
+<formal_arg_list>       ::= <formal_arg>
+<formal_arg_list>       ::= <formal_arg> , <formal_arg_list>
+
+<formal_arg>            ::= <type> <identifier>
+
+<method_type>           ::= void
+<method_type>           ::= <type>
+
+<type>                  ::= <primitive_type>
+<type>                  ::= <identifier>
+
+<primitive_type>        ::= boolean
+<primitive_type>        ::= char
+<primitive_type>        ::= int
+<primitive_type>        ::= String
+
+<var_declarator_list>   ::= <identifier> , <var_declarator_list>
+<var_declarator_list>   ::= <identifier>
+
+<block>                 ::= { <statement>* }
+
+<statement>             ::= ;
+<statement>             ::= if ( <expression> ) <statement>
+<statement>             ::= if ( <expression> ) <statement> 
+                            else <statement>
+<statement>             ::= return <expression>? ;
+<statement>             ::= <block>
+
+<expressions>           ::= <expression> <binary_op> <expression>
+<expressions>           ::= <unary_op> <expression>
+<expressions>           ::= <primary>
+
+<binary_op>             ::= =
+<binary_op>             ::= || 
+<binary_op>             ::= &&
+<binary_op>             ::= ==
+<binary_op>             ::= !=
+<binary_op>             ::= <
+<binary_op>             ::= >
+<binary_op>             ::= <=
+<binary_op>             ::= >=
+<binary_op>             ::= +
+<binary_op>             ::= -
+<binary_op>             ::= *
+<binary_op>             ::= /
+<binary_op>             ::= %
+
+<unary_op>              ::= !
+<unary_op>              ::= +
+<unary_op>              ::= -
+
+<primary>               ::= <new_expr>
+<primery>               ::= <identifier>
+
+<new_expr>              ::= <literal>
+<new_expr>              ::= this
+<new_expr>              ::= this . <identifier>
+<new_expr>              ::= ( <expression> )
+<new_expr>              ::= new <identifier> 
+                            <actual_args>
+<new_expr>              ::= <identifier> <actual_args>
+<new_expr>              ::= <primary> . <identifier> 
+                            <actual_args>
+<new_expr>              ::= super . <identifier> 
+                            <actual_args>
+
+<literal>               ::= null
+<literal>               ::= true
+<literal>               ::= false
+<literal>               ::= <int_literal>
+<literal>               ::= <char_literal>
+<literal>               ::= <string_literal>
+
+<actual_args>           ::= ( <expr_list>? )
+
+<expr_list>             ::= <expression>
+<expr_list>             ::= <expression> , <expr_list>
+
+\end{verbatim}
+
+\subsection{Gramatica modificada}
+
+Cambios realizados:
+\begin{itemize}
+
+\item Producciones para \texttt{classDef}
+
+\item Producciones para expresiones, tomando en cuenta precedencia y 
+asociatividad.
+
+\item Producciones para sentencia \texttt{while}.
+
+\item Producciones para sentencia \texttt{for}.
+\end{itemize}
+
+\begin{verbatim}
+<start>                 ::= <classdef>+ <class>+
+
+<classdef>              ::= classdef <identifier> <super>? 
+                            { <field>* <classdef_ctor>* 
+                            <classdef_method>* }
+
+<class>                 ::= class <identifier> <super>? 
+                            { <field>* <ctor>* <method>* }
+
+<super>                 ::= extends <identifier>
+
+<field>                 ::= <type> <var_declarator_list> ;
+
+<classdef_method>       ::= <method_type> <identifier> 
+                            <formal_args>
+
+<method>                ::= <method_type> <identifier> 
+                            <formal_args> <block>
+
+<classdef_ctor>         ::= <identifier> <formal_args>
+
+<ctor>                  ::= <identifier> <formal_args> <block>
+
+<formal_args>           ::= ( <formal_arg_list>? )
+
+<formal_arg_list>       ::= <formal_arg>
+<formal_arg_list>       ::= <formal_arg> , <formal_arg_list>
+
+<formal_arg>            ::= <type> <identifier>
+
+<method_type>           ::= void
+<method_type>           ::= <type>
+
+<type>                  ::= <primitive_type>
+<type>                  ::= <identifier>
+
+<primitive_type>        ::= boolean
+<primitive_type>        ::= char
+<primitive_type>        ::= int
+<primitive_type>        ::= String
+
+<var_declarator_list>   ::= <identifier> , <var_declarator_list>
+<var_declarator_list>   ::= <identifier>
+
+<block>                 ::= { <statement>* }
+
+<statement>             ::= ;
+<statement>             ::= if ( <expression> ) <statement>
+<statement>             ::= if ( <expression> ) <statement> 
+                            else <statement>
+<statement>             ::= while ( <statement> ) <statement>
+<statement>             ::= for ( <statement> ; <statement> ; 
+                            <statement> ) <statement>
+<statement>             ::= return <expression>? ;
+<statement>             ::= <block>
+
+<expression>            ::= <assignment_expr>
+
+<assignment_expr>       ::= <logical_expr>
+
+<logical_expr>          ::= <logical_or_expr> <logical_expr_rest>
+
+<logical_expr_rest>     ::= LAMBDA
+<logical_expr_rest>     ::= ASSIGNMENT <logical_expr>
+
+<logical_or_expr>       ::= <logical_and_expr> <logical_or_expr_rest>
+
+<logical_or_expr_rest>  ::= LAMBDA
+<logical_or_expr_rest>  ::= OR <logical_or_expr>
+
+<logical_and_expr>      ::= <equality_expr> <logical_and_expr_rest>
+
+<logical_and_expr_rest> ::= LAMBDA
+<logical_and_expr_rest> ::= AND <logical_and_expr>
+
+<equality_expr>         ::= <relational_expr> <equality_expr_rest>
+
+<equality_expr_rest>    ::= LAMBDA
+<equality_expr_rest>    ::= EQUALS <equality_expr>
+<equality_expr_rest>    ::= NOTEQUALS <equality_expr>
+
+<relational_expr>       ::= <term_expr> <relational_expr_rest>
+
+<relational_expr_rest>  ::= LAMBDA
+<relational_expr_rest>  ::= LT <relational_expr>
+<relational_expr_rest>  ::= GT <relational_expr>
+<relational_expr_rest>  ::= LTEQ <relational_expr>
+<relational_expr_rest>  ::= GTEQ <relational_expr>
+
+<term_expr>             ::= <factor_expr> <additive_expr_rest>
+
+<additive_expr_rest>    ::= LAMBDA
+<additive_expr_rest>    ::= ADD <term_expr>
+<additive_expr_rest>    ::= SUB <term_expr>
+
+<factor_expr>           ::= <unary_expr> <multiplicative_expr_rest>
+
+<factor_expr_rest>      ::= LAMBDA
+<factor_expr_rest>      ::= MUL <factor_expr>
+<factor_expr_rest>      ::= DIV <factor_expr>
+<factor_expr_rest>      ::= MOD <factor_expr>
+
+<unary_expr>            ::= ADD <unary_expr>
+<unary_expr>            ::= SUB <unary_expr>
+<unary_expr>            ::= NOT <unary_expr>
+<unary_expr>            ::= <primary>
+
+<primary>               ::= <new_expr>
+<primery>               ::= <identifier>
+
+<new_expr>              ::= <literal>
+<new_expr>              ::= this
+<new_expr>              ::= this . <identifier>
+<new_expr>              ::= ( <expression> )
+<new_expr>              ::= new <identifier> <actual_args>
+<new_expr>              ::= <identifier> <actual_args>
+<new_expr>              ::= <primary> . <identifier> <actual_args>
+<new_expr>              ::= super . <identifier> <actual_args>
+
+<literal>               ::= null
+<literal>               ::= true
+<literal>               ::= false
+<literal>               ::= <int_literal>
+<literal>               ::= <char_literal>
+<literal>               ::= <string_literal\textless{}
+
+<actual_args>           ::= ( \textless{}expr_list>? )
+
+<expr_list>             ::= <expression\textless{}
+<expr_list>             ::= <expression> , <expr_list>
+\end{verbatim}\textless{}
+\textless{}subsection{Gramatica modificada 2}
+
+La siguiente gramatica es identica a la anterior con los siguientes 
+cambios:
+
+\begin{itemize}
+
+\item Los simbolos terminales has sido reemplazados por los tokens 
+producidos por el scanner.
+
+\item Se eliminaron las extensiones en la gramatica, eliminando el 
+uso de los +, *, ?.
+
+\item Se agrego una produccion de \textless{}start\textgreater{} para 
+eliminar el +.
+
+\item Se agrego una produccion de \textless{}class\textgreater{} para 
+eliminar el \textless{}super\textgreater{}?
+
+\item Se agrego una produccion \textless{}class\_body\textgreater{} 
+para factorizar { field ctor method }.
+
+\item Se agregaron las producciones \textless{}fields\textgreater{} 
+\textless{}ctors\textgreater{} y \textless{}methods\textgreater{} 
+para eliminar el \textless{}field\textgreater{}*.
+
+\item Se agrego un simbolo \textless{}statements\textgreater{} 
+para el \textless{}statement\textgreater{}* en la produccion de 
+\textless{}block\textgreater{}.
+
+\item Se agrego una produccion de \textless{}statement\textgreater{} 
+para el return \textless{}expression\textgreater{}? ;
+
+\item agregada produccion \textless{}actual\_args\textgreater{} para 
+\textless{}expr\_list\textgreater{}?.
+
+\end{itemize}
+
+\begin{verbatim}
+<start>                 ::= <class>
+<start>                 ::= <class> <start>
+
+<class>                 ::= TK_CLASS TK_IDENTIFIER <class_body>
+<class>                 ::= TK_CLASS TK_IDENTIFIER <super> <class_body>
+
+<class_body>            ::= TK_BRACE_OPEN 
+                            <fields> <ctors> <methods> 
+                            TK_BRACE_CLOSE
+
+<fields>                ::= LAMBDA
+<fields>                ::= <field>
+<fields>                ::= <field> <fields>
+
+<ctors>                 ::= LAMBDA
+<ctors>                 ::= <ctor>
+<ctors>                 ::= <ctor> <ctors>
+
+<methods>               ::= LAMBDA
+<methods>               ::= <method>
+<methods>               ::= <method> <methods>
+
+<super>                 ::= TK_EXTENDS TK_IDENTIFIER
+
+<field>                 ::= <type> <var_declarator_list> TK_SEMICOLON
+
+<method>                ::= <method_type> TK_IDENTIFIER 
+                            <formal_args> <block>
+
+<ctor>                  ::= TK_IDENTIFIER <formal_args> <block>
+
+<formal_args>           ::= TK_PAREN_OPEN TK_PAREN_CLOSE
+<formal_args>           ::= TK_PAREN_OPEN 
+                            <formal_arg_list> 
+                            TK_PAREN_CLOSE
+
+<formal_arg_list>       ::= <formal_arg>
+<formal_arg_list>       ::= <formal_arg> TK_COMMA <formal_arg_list>
+
+<formal_arg>            ::= <type> TK_IDENTIFIER
+
+<method_type>           ::= TK_VOID
+<method_type>           ::= <type>
+
+<type>                  ::= TK_IDENTIFIER
+<type>                  ::= <primitive_type>
+
+<primitive_type>        ::= TK_BOOLEAN
+<primitive_type>        ::= TK_CHAR
+<primitive_type>        ::= TK_INT
+<primitive_type>        ::= TK_STRING
+
+<var_declarator_list>   ::= TK_IDENTIFIER
+<var_declarator_list>   ::= TK_IDENTIFIER TK_COMMA 
+                            <var_declarator_list>
+
+<block>                 ::= TK_BRACE_OPEN <statements> TK_BRACE_CLOSE
+
+<statements>            ::= <statement>
+<statements>            ::= <statement> <statements>
+
+<statement>             ::= TK_SEMICOLON
+<statement>             ::= TK_IF TK_PAREN_OPEN <expression> 
+                            TK_PAREN_CLOSE <statement>
+<statement>             ::= TK_IF 
+                            TK_PAREN_OPEN <expression> 
+                            TK_PAREN_CLOSE <statement> 
+                            TK_ELSE <statement>
+<statement>             ::= TK_RETURN TK_SEMICOLON
+<statement>             ::= TK_RETURN <expression> TK_SEMICOLON
+<statement>             ::= <block>
+<statement>             ::= TK_FOR TK_PAREN_OPEN <statement> 
+                            TK_SEMICOLON <statement> TK_SEMICOLON
+                            <statement> TK_PAREN_CLOSE <statement>
+<statement>             ::= TK_WHILE TK_PAREN_OPEN <statement> 
+                            TK_PAREN_CLOSE <statement>
+
+<expression>            ::= <assignment_expr>
+
+<assignment_expr>       ::= <logical_expr>
+
+<logical_expr>          ::= <logical_or_expr> <logical_expr_rest>
+
+<logical_expr_rest>     ::= LAMBDA
+<logical_expr_rest>     ::= TK_ASSIGNMENT <logical_expr>
+
+<logical_or_expr>       ::= <logical_and_expr> <logical_or_expr_rest>
+
+<logical_or_expr_rest>  ::= LAMBDA
+<logical_or_expr_rest>  ::= TK_OR <logical_or_expr>
+
+<logical_and_expr>      ::= <equality_expr> <logical_and_expr_rest>
+
+<logical_and_expr_rest> ::= LAMBDA
+<logical_and_expr_rest> ::= TK_AND <logical_and_expr>
+
+<equality_expr>         ::= <relational_expr> <equality_expr_rest>
+
+<equality_expr_rest>    ::= LAMBDA
+<equality_expr_rest>    ::= TK_EQUALS <equality_expr>
+<equality_expr_rest>    ::= TK_NOTEQUALS <equality_expr>
+
+<relational_expr>       ::= <term_expr> <relational_expr_rest>
+
+<relational_expr_rest>  ::= LAMBDA
+<relational_expr_rest>  ::= TK_LT <relational_expr>
+<relational_expr_rest>  ::= TK_GT <relational_expr>
+<relational_expr_rest>  ::= TK_LTEQ <relational_expr>
+<relational_expr_rest>  ::= TK_GTEQ <relational_expr>
+
+<term_expr>             ::= <factor_expr> <additive_expr_rest>
+
+<additive_expr_rest>    ::= LAMBDA
+<additive_expr_rest>    ::= TK_ADD <term_expr>
+<additive_expr_rest>    ::= TK_SUB <term_expr>
+
+<factor_expr>           ::= <unary_expr> <multiplicative_expr_rest>
+
+<factor_expr_rest>      ::= LAMBDA
+<factor_expr_rest>      ::= TK_MUL <factor_expr>
+<factor_expr_rest>      ::= TK_DIV <factor_expr>
+<factor_expr_rest>      ::= TK_MOD <factor_expr>
+
+<unary_expr>            ::= TK_ADD <unary_expr>
+<unary_expr>            ::= TK_SUB <unary_expr>
+<unary_expr>            ::= TK_NOT <unary_expr>
+<unary_expr>            ::= <primary>
+
+<primary>               ::= TK_IDENTIFIER
+<primary>               ::= <new_expr>
+
+<new_expr>              ::= <literal>
+<new_expr>              ::= TK_THIS
+<new_expr>              ::= TK_THIS TK_PERIOD TK_IDENTIFIER
+<new_expr>              ::= TK_PAREN_OPEN <expression> TK_PAREN_CLOSE
+<new_expr>              ::= TK_NEW TK_IDENTIFIER <actual_args>
+<new_expr>              ::= TK_IDENTIFIER <actual_args>
+<new_expr>              ::= <primary> TK_PERIOD 
+                            TK_IDENTIFIER <actual_args>
+<new_expr>              ::= TK_SUPER TK_PERIOD 
+                            TK_IDENTIFIER <actual_args>
+
+<literal>               ::= TK_NULL
+<literal>               ::= TK_TRUE
+<literal>               ::= TK_FALSE
+<literal>               ::= TK_INT_LITERAL
+<literal>               ::= TK_CHAR_LITERAL
+<literal>               ::= TK_STRING_LITERAL
+
+<actual_args>           ::= TK_PAREN_OPEN TK_PAREN_CLOSE
+<actual_args>           ::= TK_PAREN_OPEN <expr_list> TK_PAREN_CLOSE
+
+<expr_list>             ::= <expression>
+<expr_list>             ::= <expression> TK_COMMA <expr_list>
+\end{verbatim}
+
+\section{Diseño}
+
+La principal decisión de diseño que afecto la implementación fue la
+abstracción de los estados del automata finito reconocedor.
+
+El analizador léxico se desarrolló utilizando únicamente la versión
+2.7 del lenguaje Python (+www.python.org+).
+
+Para implementar el analizador léxico se realizó la especificación de
+la máquina  de estados basándose en las expresiones regulares
+definidas en la sección  anterior, para luego representarlo en código
+Python.
+
+\subsection{Archivo \texttt{main.py}}
+
+Contiene el punto de inicio de ejecución del programa, instanciando
+el \texttt{Scanner} con el archivo de entrada, y realiza checkeo de
+errores en la invocacíón.
+
+\subsection{Archivo \texttt{scanner.py}}
+
+Contiene la definición de la clase \texttt{Scanner}. 
+
+\subsection{Archivo \texttt{states.py}}
+
+Contiene la definicion de la clase \texttt{State}, la instanciación de
+los estados del autómata finito reconocedor y sus transiciones.
+
+\subsection{Archivo \texttt{tokens.py}}
+
+Contiene la definición de la clase \texttt{Token} y
+\texttt{TokenType}, y la  instanciación de los tokens retornados por
+el analizador léxico.
+
+\subsection{Archivo \texttt{errors.py}}
+
+Contiene la definición de la clase \texttt{LexicalError}.
+
+\subsection{Clase \texttt{Scanner}}
+
+\texttt{Scanner} es la clase que representa al analizador léxico propiamente.
+Este implementa el método \texttt{get\_token()} que devuelve
+secuencialmente todos los tokens reconocidos en un dado archivo que
+contiene código \texttt{MiniJava-Decaf}. 
+
+\subsection{Clase \texttt{State}}
+
+La clase principal utilizada es la llamada \texttt{State}. Esta
+representa una abstracción de un estado de un autómata
+finito, que cuenta con una serie de funciones de checkeo para
+determinar si se activa una transición o no.
+
+\subsection{Clases \texttt{Token} y \texttt{TokenType}}
+
+Para representar a los tokens se armaron dos clases:
+\texttt{TokenType} y \texttt{Token}. \texttt{TokenType}, definida en
+\texttt{tokens.py}, es una abstracción sobre los distintos tipos de
+tokens reconocidos y especificados en la sección anterior.
+\texttt{Token} abstrae un token y almacena los metadatos asociados a
+el, y es instanciado según el análisis del archivo de código fuente
+en cuestión.
+
+\subsection{Clase \texttt{LexicalError}}
+
+Para el manejo de errores, se creó el tipo de excepción
+\texttt{LexicalError} dentro del archivo \texttt{errors.py}.
+
+\section{Verificación}
+
+\subsection{Errores detectados}
+
+El analizador léxico reconoce los siguientes tipos de errores:
+
+\begin{itemize}
+
+\item Comentario del tipo /* */ que no esté propiamente cerrado.
+
+\item Informa de tokens no reconocidos.
+
+\item Caracter no reconocido: si se intenta ingresar un caracter que
+no pertenece al alfabeto se producirá un error.
+
+\item Si el archivo de entrada especificado no existe, se producirá un
+error.
+
+\item Si se encuentra un caracter literal de mas de un caracter, e.g.
+\textquotesingle{}hola\textquotesingle{}, se producirá un error. En
+cambio, si es un caracter válido, e.g.
+\textquotesingle{}n\textquotesingle{}, se aceptará.
+
+\end{itemize}
+
+\subsection{Casos de prueba}
+
+Cuando un error es detectado, también se muestra por pantalla la
+ubicación de la porción del texto que presenta el error. Por ejemplo:
+
+\begin{verbatim}
+ ERROR: Line: 3, Col: 4 :: Comentario no cerrado.
+ In line 3:4
+     /* comment
+ ----^
+\end{verbatim}
+
+\begin{verbatim}
+ ERROR: Line: 2, Col: 10 :: Token no reconocido.
+ In line 2:10
+     a = 1 # 2
+ ----------^
+\end{verbatim}
+
+
+
+
+\noindent
+\textbf{Test \texttt{000-cor-tokens.java}}
+
+\textbf{Descripción:} El archivo contiene todos los tokens reconocidos
+por el scanner, uno por linea.
+
+\textbf{Resultado esperado:} Caso correcto.
+
+
+
+
+\noindent
+\textbf{Test \texttt{001-err-forbidden-words.java}}
+
+\textbf{Descripción:} El archivo contiene todas las palabras
+prohibidas, una por linea, comentadas. El analizador léxico falla al
+detectar la primera, se puede modificar el archivo descomentando las
+palabras para probar la detección de cada una de las palabras.
+
+\textbf{Resultado esperado:} Caso erróneo. detección correcta de palabras
+prohibidas, emitiendo un error y un mensaje apropiado.
+
+
+
+
+\noindent
+\textbf{Test \texttt{002-err-forbidden-operator.java}}
+
+\textbf{Descripción:} El archivo contiene todos los operadores
+prohibidos, uno por linea, comentados. El analizador léxico falla al
+detectar el primero; se puede modificar el archivo descomentando los
+otros operadores para probar la detección de cada uno.
+
+\textbf{Resultado esperado:} Caso erróneo. 
+
+
+
+
+\noindent
+\textbf{Test \texttt{003-cor-ejemplo.java}}
+
+\textbf{Descripción:} Este es el caso de test principal para detección
+correcta de tokens.
+
+\textbf{Resultado esperado:} Caso correcto. Todos los tokens son
+reconocidos con éxito según lo esperado, y los comentarios son
+obviados sin modificar la posición final de los tokens alrededor de
+ellos.
+
+
+
+
+\noindent
+\textbf{Test \texttt{004-err-hash.java}}
+
+\textbf{Descripción:} El archivo contiene un ejemplo de un operador
+erróneo en el contexto de una función.
+
+\textbf{Resultado esperado:} Caso erróneo. 
+
+
+
+
+\noindent
+\textbf{Test \texttt{005-err-invalid-token.java}}
+
+\textbf{Descripción:} El archivo contiene un ejemplo de un token 
+inválido.
+
+\textbf{Resultado esperado:} Caso erróneo.
+
+
+
+
+\noindent
+\textbf{Test \texttt{006-err-ampersand.java}}
+
+\textbf{Descripción:} El archivo contiene un ejemplo de un token 
+inválido.
+
+\textbf{Resultado esperado:} Caso erróneo.
+
+
+
+
+\noindent
+\textbf{Test \texttt{007-err-comentario no finalizado.java}}
+
+\textbf{Descripción:} El archivo contiene un ejemplo de un comentario
+no cerrado.
+
+\textbf{Resultado esperado:} Caso erróneo.
+
+
+
+
+\noindent
+\textbf{Test \texttt{008-cor-comments.java}}
+
+\textbf{Descripción:} El archivo contiene código con varios ejemplos
+de comentarios. La idea de este test es mostrar que aun con
+comentarios, los números de linea y columna siguen siendo calculados
+correctamente.
+
+\textbf{Resultado esperado:} Caso correcto.
+
+
+
+
+\noindent
+\textbf{Test \texttt{009-err-invalid-lit-char.java}}
+
+\textbf{Descripción:} El archivo contiene un ejemplo con un literal de
+caractér inválido.
+
+\textbf{Resultado esperado:} Caso erróneo.
+
+
+
+
+\noindent
+\textbf{Test \texttt{010-err-string-no-cerrado.java}}
+
+\textbf{Descripción:} El archivo contiene un ejemplo con un string no
+cerrado.
+
+\textbf{Resultado esperado:} Caso erróneo.
+
+
+
+
+\noindent
+\textbf{Test \texttt{011-err-string-con-newline.java}}
+
+\textbf{Descripción:} El archivo contiene un ejemplo con un string que
+no esta cerrado en la misma linea.
+
+\textbf{Resultado esperado:} Caso erróneo.
+
+
+
+
+\noindent
+\textbf{Test \texttt{012-intlit-malformado.java}}
+
+\textbf{Descripción:} El archivo contiene un ejemplo con un literal de 
+entero mal formado.
+
+\textbf{Resultado esperado:} Caso erróneo.
+
+
+
+
+\noindent
+\textbf{Test \texttt{113-strlit-malformado.java}}
+
+\textbf{Descripción:} El archivo contiene un ejemplo con un literal de
+string mal formado.
+
+\textbf{Resultado esperado:} Caso erróneo.
+
+
+
+
+\noindent
+\textbf{Test \texttt{114-charlit-malformado.java}}
+
+\textbf{Descripción:} El archivo contiene un ejemplo con un litearl de 
+caractér mal formado.
+
+\textbf{Resultado esperado:} Caso erróneo.
+\end{document}
+

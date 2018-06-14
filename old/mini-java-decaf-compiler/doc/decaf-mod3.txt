@@ -1,0 +1,130 @@
+<start>                 ::= <classdef>+ <class>+
+
+<classdef>              ::= classdef <identifier> <super>? 
+                            { <field>* <classdef_ctor>* 
+                            <classdef_method>* }
+
+<class>                 ::= class <identifier> <super>? 
+                            { <field>* <ctor>* <method>* }
+
+<super>                 ::= extends <identifier>
+
+<field>                 ::= <type> <var_declarator_list> ;
+
+<classdef_method>       ::= <method_type> <identifier> 
+                            <formal_args>
+
+<method>                ::= <method_type> <identifier> 
+                            <formal_args> <block>
+
+<classdef_ctor>         ::= <identifier> <formal_args>
+
+<ctor>                  ::= <identifier> <formal_args> <block>
+
+<formal_args>           ::= ( <formal_arg_list>? )
+
+<formal_arg_list>       ::= <formal_arg>
+<formal_arg_list>       ::= <formal_arg> , <formal_arg_list>
+
+<formal_arg>            ::= <type> <identifier>
+
+<method_type>           ::= void
+<method_type>           ::= <type>
+
+<type>                  ::= <primitive_type>
+<type>                  ::= <identifier>
+
+<primitive_type>        ::= boolean
+<primitive_type>        ::= char
+<primitive_type>        ::= int
+<primitive_type>        ::= String
+
+<var_declarator_list>   ::= <identifier> , <var_declarator_list>
+<var_declarator_list>   ::= <identifier>
+
+<block>                 ::= { <statement>* }
+
+<statement>             ::= ;
+<statement>             ::= if ( <expression> ) <statement>
+<statement>             ::= if ( <expression> ) <statement> 
+                            else <statement>
+<statement>             ::= while ( <statement> ) <statement>
+<statement>             ::= for ( <statement> ; <statement> ; 
+                            <statement> ) <statement>
+<statement>             ::= return <expression>? ;
+<statement>             ::= <block>
+
+<expression>            ::= <assignment_expr>
+
+<assignment_expr>       ::= <logical_expr>
+
+<logical_expr>          ::= <logical_or_expr> <logical_expr_rest>
+
+<logical_expr_rest>     ::= LAMBDA
+<logical_expr_rest>     ::= ASSIGNMENT <logical_expr>
+
+<logical_or_expr>       ::= <logical_and_expr> <logical_or_expr_rest>
+
+<logical_or_expr_rest>  ::= LAMBDA
+<logical_or_expr_rest>  ::= OR <logical_or_expr>
+
+<logical_and_expr>      ::= <equality_expr> <logical_and_expr_rest>
+
+<logical_and_expr_rest> ::= LAMBDA
+<logical_and_expr_rest> ::= AND <logical_and_expr>
+
+<equality_expr>         ::= <relational_expr> <equality_expr_rest>
+
+<equality_expr_rest>    ::= LAMBDA
+<equality_expr_rest>    ::= EQUALS <equality_expr>
+<equality_expr_rest>    ::= NOTEQUALS <equality_expr>
+
+<relational_expr>       ::= <term_expr> <relational_expr_rest>
+
+<relational_expr_rest>  ::= LAMBDA
+<relational_expr_rest>  ::= LT <relational_expr>
+<relational_expr_rest>  ::= GT <relational_expr>
+<relational_expr_rest>  ::= LTEQ <relational_expr>
+<relational_expr_rest>  ::= GTEQ <relational_expr>
+
+<term_expr>             ::= <factor_expr> <additive_expr_rest>
+
+<additive_expr_rest>    ::= LAMBDA
+<additive_expr_rest>    ::= ADD <term_expr>
+<additive_expr_rest>    ::= SUB <term_expr>
+
+<factor_expr>           ::= <unary_expr> <multiplicative_expr_rest>
+
+<factor_expr_rest>      ::= LAMBDA
+<factor_expr_rest>      ::= MUL <factor_expr>
+<factor_expr_rest>      ::= DIV <factor_expr>
+<factor_expr_rest>      ::= MOD <factor_expr>
+
+<unary_expr>            ::= ADD <unary_expr>
+<unary_expr>            ::= SUB <unary_expr>
+<unary_expr>            ::= NOT <unary_expr>
+<unary_expr>            ::= <primary>
+
+<primary>               ::= <new_expr>
+<primery>               ::= <identifier>
+
+<new_expr>              ::= <literal>
+<new_expr>              ::= this
+<new_expr>              ::= this . <identifier>
+<new_expr>              ::= ( <expression> )
+<new_expr>              ::= new <identifier> <actual_args>
+<new_expr>              ::= <identifier> <actual_args>
+<new_expr>              ::= <primary> . <identifier> <actual_args>
+<new_expr>              ::= super . <identifier> <actual_args>
+
+<literal>               ::= null
+<literal>               ::= true
+<literal>               ::= false
+<literal>               ::= <int_literal>
+<literal>               ::= <char_literal>
+<literal>               ::= <string_literal\textless{}
+
+<actual_args>           ::= ( \textless{}expr_list>? )
+
+<expr_list>             ::= <expression\textless{}
+<expr_list>             ::= <expression> , <expr_list>

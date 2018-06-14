@@ -1,0 +1,17 @@
+*.pyc
+build/
+dist/
+/*/informe/*.aux
+/*/informe/*.bbl
+/*/informe/*.blg
+/*/informe/*.log
+/*/informe/*.out
+/*/informe/*.toc
+/*/informe/*.dvi
+*~
+/*/informe/*.pdf
+.project
+.pydevproject
+*.bak
+out.txt
+src/bateria/*.mepa

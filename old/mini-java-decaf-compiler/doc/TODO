@@ -1,0 +1,23 @@
+TODO:
+    [ ] recordar que no permite comentarios anidados
+    [ ] cambiar ejemplo de corrida
+    [ ] corregir los numeros de secciones
+
+    [ ] test all cases
+    [ ] make new ones
+    [ ] document the test cases
+
+    [x] * / deberia ser detectado como mul div y no como comentario que no ha sido abierto
+    [x] fixed two consecutive operator bug
+    [x] que hace con los int literal, los deja como string o los convierte a numero
+    [ ] con los char lit no guardar en el lexema \ '  sino convertirlo al character
+    [x] fixed first token in line wrong column reporting
+    [x] fixed first token in first line wrong column reporting
+    [x] fix explosion when input file does not exist
+    [x] mejores mensajes de error
+    [x] string no cerrado
+    [x] caracter mal formado
+
+odin, gi meg styrke, visdom og kunnskap
+odin, give me strength, wisdom and knowledge
+

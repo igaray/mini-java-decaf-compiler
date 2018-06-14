@@ -1,0 +1,202 @@
+Factorizada.
+
+<start>                     ::= <classdef_start> <class_start>
+
+<classdef_start>            ::= <classdef> <classdef_start_rest>
+
+<classdef_start_rest>       ::= LAMBDA
+<classdef_start_rest>       ::= <classdef_start>
+
+<classdef>                  ::= TK_CLASSDEF TK_IDENTIFIER <super> <classdef_body>
+
+<classdef_body>             ::= TK_BRACE_OPEN <classdef_ctors> <classdef_methods> TK_BRACE_CLOSE
+
+<classdef_ctors>            ::= LAMBDA
+<classdef_ctors>            ::= <classdef_ctor> <classdef_ctors>
+
+<classdef_ctor>             ::= TK_IDENTIFIER <formal_args> TK_SEMICOLON
+
+<classdef_methods>          ::= LAMBDA
+<classdef_methods>          ::= <classdef_method> <classdef_methods>
+
+<classdef_method>           ::= <method_type> TK_IDENTIFIER <formal_args> TK_SEMICOLON
+
+<class_start>               ::= <class> <class_start_rest>
+
+<class_start_rest>          ::= LAMBDA
+<class_start_rest>          ::= <class_start>    
+
+<class>                     ::= TK_CLASS TK_IDENTIFIER <super> <class_body>
+
+<class_body>                ::= TK_BRACE_OPEN <fields> <ctors> <methods> TK_BRACE_CLOSE
+
+<fields>                    ::= LAMBDA
+<fields>                    ::= <field> <fields>
+
+<ctors>                     ::= LAMBDA
+<ctors>                     ::= <ctor> <ctors>
+
+<methods>                   ::= LAMBDA
+<methods>                   ::= <method> <methods>
+
+<super>                     ::= LAMBDA
+<super>                     ::= TK_EXTENDS TK_IDENTIFIER
+
+<field>                     ::= <type> <var_declarator_list> TK_SEMICOLON
+
+<method>                    ::= <method_type> TK_IDENTIFIER <formal_args> <block>
+
+<ctor>                      ::= TK_IDENTIFIER <formal_args> <block>
+
+<formal_args>               ::= TK_PAREN_OPEN <formal_args_rest>
+                            
+<formal_args_rest>          ::= TK_PAREN_CLOSE
+<formal_args_rest>          ::= <formal_arg_list> TK_PAREN_CLOSE
+
+<formal_arg_list>           ::= <formal_arg> <formal_arg_list_rest>
+
+<formal_arg_list_rest>      ::= LAMBDA
+<formal_arg_list_rest>      ::= TK_COMMA <formal_arg_list>
+
+<formal_arg>                ::= <type> TK_IDENTIFIER
+
+<method_type>               ::= TK_VOID
+<method_type>               ::= <type>
+
+<type>                      ::= TK_IDENTIFIER
+<type>                      ::= <primitive_type>
+
+<primitive_type>            ::= TK_BOOLEAN
+<primitive_type>            ::= TK_CHAR
+<primitive_type>            ::= TK_INT
+<primitive_type>            ::= TK_STRING
+
+<var_declarator_list>       ::= TK_IDENTIFIER
+                                <var_declarator_list_rest>
+
+<var_declarator_list_rest>  ::= LAMBDA
+<var_declarator_list_rest>  ::= TK_COMMA <var_declarator_list>
+
+<block>                     ::= TK_BRACE_OPEN <statements> TK_BRACE_CLOSE
+
+<statements>                ::= <statement> <statements_rest>
+
+<statements_rest>           ::= LAMBDA
+<statements_rest>           ::= <statements>
+
+<statement>                 ::= TK_SEMICOLON
+
+<statement>                 ::= <expression>
+
+% TODO: not LL(1)
+
+<statement>                 ::= TK_IF 
+                                TK_PAREN_OPEN <expression> TK_PAREN_CLOSE 
+                                <statement> 
+                                <statement_rest_if>
+
+<statement_rest_if>         ::= LAMBDA
+<statement_rest_if>         ::= TK_ELSE <statement>
+
+<statement>                 ::= TK_RETURN <statement_rest_return>
+
+<statement_rest_return>     ::= TK_SEMICOLON
+<statement_rest_return>     ::= <expression> TK_SEMICOLON
+
+<statement>                 ::= <block>
+
+<statement>                 ::= TK_FOR 
+                                TK_PAREN_OPEN 
+                                <expression> TK_SEMICOLON <expression> TK_SEMICOLON <expression> 
+                                TK_PAREN_CLOSE 
+                                <statement>
+
+<statement>                 ::= TK_WHILE TK_PAREN_OPEN <expression> TK_PAREN_CLOSE <statement>
+
+<expression>                ::= <assignment_expr>
+
+<assignment_expr>           ::= <logical_expr> <assignment_expression_rest>
+
+<assignment_expr_rest>      ::= LAMBDA
+<assignment_expr_rest>      ::= TK_THIS TK_PERIOD TK_IDENTIFIER TK_ASSIGNMENT <expression>
+<assignment_expr_rest>      ::= TK_IDENTIFIER TK_ASSIGNMENT <expression>
+
+<logical_expr>              ::= <logical_or_expr> <logical_expr_rest>
+
+<logical_expr_rest>         ::= LAMBDA
+<logical_expr_rest>         ::= <logical_expr>
+
+<logical_or_expr>           ::= <logical_and_expr> <logical_or_expr_rest>
+
+<logical_or_expr_rest>      ::= LAMBDA
+<logical_or_expr_rest>      ::= TK_OR <logical_or_expr>
+
+<logical_and_expr>          ::= <equality_expr> <logical_and_expr_rest>
+
+<logical_and_expr_rest>     ::= LAMBDA
+<logical_and_expr_rest>     ::= TK_AND <logical_and_expr>
+
+<equality_expr>             ::= <relational_expr> <equality_expr_rest>
+
+<equality_expr_rest>        ::= LAMBDA
+<equality_expr_rest>        ::= TK_EQUALS    <equality_expr>
+<equality_expr_rest>        ::= TK_NOTEQUALS <equality_expr>
+
+<relational_expr>           ::= <term_expr> <relational_expr_rest>
+
+<relational_expr_rest>      ::= LAMBDA
+<relational_expr_rest>      ::= TK_LT   <relational_expr>
+<relational_expr_rest>      ::= TK_GT   <relational_expr>
+<relational_expr_rest>      ::= TK_LTEQ <relational_expr>
+<relational_expr_rest>      ::= TK_GTEQ <relational_expr>
+
+<term_expr>                 ::= <factor_expr> <term_expr_rest>
+
+<term_expr_rest>        ::= LAMBDA
+<term_expr_rest>        ::= TK_ADD <term_expr>
+<term_expr_rest>        ::= TK_SUB <term_expr>
+
+<factor_expr>               ::= <unary_expr> <factor_expr_rest>
+
+<factor_expr_rest>          ::= LAMBDA
+<factor_expr_rest>          ::= TK_MUL <factor_expr>
+<factor_expr_rest>          ::= TK_DIV <factor_expr>
+<factor_expr_rest>          ::= TK_MOD <factor_expr>
+
+<unary_expr>                ::= TK_ADD <unary_expr>
+<unary_expr>                ::= TK_SUB <unary_expr>
+<unary_expr>                ::= TK_NOT <unary_expr>
+<unary_expr>                ::= <primary>
+
+<primary>                   ::= <literal> <primary_rest>
+<primary>                   ::= TK_PAREN_OPEN <expression> TK_PAREN_CLOSE <primary_rest>
+<primary>                   ::= TK_NEW TK_IDENTIFIER <actual_args> <primary_rest>
+<primary>                   ::= TK_SUPER TK_PERIOD TK_IDENTIFIER <actual_args> <primary_rest>
+<primary>                   ::= TK_THIS <primary_rest_this> <primary_rest>
+<primary>                   ::= TK_IDENTIFIER <primary_rest_id> <primary_rest>
+
+<primary_rest>              ::= LAMBDA
+<primary_rest>              ::= TK_PERIOD TK_IDENTIFIER <actual_args>
+
+<primary_rest_this>         ::= LAMBDA
+<primary_rest_this>         ::= TK_PERIOD TK_IDENTIFIER
+
+<primary_rest_id>           ::= LAMBDA
+<primary_rest_id>           ::= <actual_args>
+
+<literal>                   ::= TK_NULL
+<literal>                   ::= TK_TRUE
+<literal>                   ::= TK_FALSE
+<literal>                   ::= TK_INT_LITERAL
+<literal>                   ::= TK_CHAR_LITERAL
+<literal>                   ::= TK_STRING_LITERAL
+
+<actual_args>               ::= TK_PAREN_OPEN <actual_args_rest>
+
+<actual_args_rest>          ::= TK_PAREN_CLOSE
+<actual_args_rest>          ::= <expr_list> TK_PAREN_CLOSE
+
+<expr_list>                 ::= <expression> <expr_list_rest>
+
+<expr_list_rest>            ::= LAMBDA
+<expr_list_rest>            ::= TK_COMMA <expr_list>
